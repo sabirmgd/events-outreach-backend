@@ -6,6 +6,7 @@ import {
   SCRAPE_QUEUE,
   ENRICHMENT_QUEUE,
   PERSONA_QUEUE,
+  DISCOVERY_QUEUE,
 } from './constants';
 
 @Global()
@@ -32,6 +33,9 @@ import {
     }),
     BullModule.registerQueue({
       name: PERSONA_QUEUE,
+    }),
+    BullModule.registerQueue({
+      name: DISCOVERY_QUEUE,
     }),
   ],
   exports: [BullModule],

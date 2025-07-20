@@ -46,7 +46,7 @@ export class PerplexityClient {
   async chatCompletion(
     promptTemplate: string,
     variables: Record<string, string>,
-    model = 'llama-3.1-sonar-small-128k-online',
+    model = 'sonar-pro',
   ): Promise<string> {
     const content = this.hydratePrompt(promptTemplate, variables);
     const payload: PerplexityRequest = {

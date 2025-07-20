@@ -25,7 +25,7 @@ export class Event {
   @Column({ type: 'timestamp with time zone' })
   start_dt: Date;
 
-  @Column({ type: 'timestamp with time zone' })
+  @Column({ type: 'timestamp with time zone', nullable: true })
   end_dt: Date;
 
   @Column({ nullable: true })

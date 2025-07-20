@@ -2,10 +2,10 @@ import { InjectQueue } from '@nestjs/bullmq';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Queue } from 'bullmq';
-import { In, Repository } from 'typeorm';
+import { In, MoreThan, Repository } from 'typeorm';
 import { CompanyService } from '../company/company.service';
 import { GeographyService } from '../geography/geography.service';
-import { EVENT_QUEUE, SCRAPE_QUEUE } from '../queue/constants';
+import { DISCOVERY_QUEUE, SCRAPE_QUEUE } from '../queue/constants';
 import { CreateEventDto } from './dto/create-event.dto';
 import { DiscoverEventsDto } from './dto/discover-events.dto';
 import { FindAllEventsDto } from './dto/find-all-events.dto';
@@ -28,7 +28,7 @@ export class EventService {
     private readonly geographyService: GeographyService,
     private readonly companyService: CompanyService,
     private readonly jobsService: JobsService,
-    @InjectQueue(EVENT_QUEUE) private readonly eventQueue: Queue,
+    @InjectQueue(DISCOVERY_QUEUE) private readonly discoveryQueue: Queue,
     @InjectQueue(SCRAPE_QUEUE) private readonly scrapeQueue: Queue,
   ) {}
 
@@ -39,17 +39,34 @@ export class EventService {
     const existingEvents = await this.eventRepository.find({
       where: {
         city: { name: In(cities) },
+        start_dt: MoreThan(new Date()),
         // A more complex query would be needed for topics/tags
       },
     });
 
-    // 2. Construct the "smart" prompt
-    const prompt = this.constructDiscoveryPrompt(
-      cities,
-      topic,
-      dateRange,
-      existingEvents,
-    );
+    const cappedExisting = existingEvents.slice(0, 50);
+    const existingEventNames = cappedExisting.map((e) => `- ${e.name}`);
+
+    const exampleJson = `{
+  "events": [
+    {
+      "name": "TechCrunch Disrupt",
+      "url": "https://disrupt.tech",
+      "startDate": "2025-09-12",
+      "endDate": "2025-09-14",
+      "venue": "Moscone Center"
+    }
+  ]
+}`;
+
+    const prompt = [
+      'SYSTEM: You are EventScout-GPT. Return strictly valid JSON that matches the schema.',
+      `Task: Find all upcoming ${topic} events in ${cities.join(', ')} within ${dateRange}. Today's date is ${new Date().toDateString()}.`,
+      'Exclude already-known events listed below.',
+      existingEventNames.join('\n') || 'None',
+      'Return JSON exactly like this example, including the endDate if available (it can be null):',
+      exampleJson,
+    ].join('\n\n');
 
     // 3. Create the job entity
     const job = await this.jobsService.create(
@@ -60,38 +77,12 @@ export class EventService {
       prompt,
     );
 
-    // 4. Add the job to the queue
-    await this.eventQueue.add('discover', job);
+    await this.discoveryQueue.add('discover', job, {
+      attempts: 3,
+      backoff: { type: 'exponential', delay: 5000 },
+    });
 
     return { jobId: job.id };
-  }
-
-  private constructDiscoveryPrompt(
-    cities: string[],
-    topic: string,
-    dateRange: string,
-    existingEvents: Event[],
-  ): string {
-    const existingEventNames = existingEvents
-      .map((e) => `- ${e.name}`)
-      .join('\n');
-    const cityList = cities.join(', ');
-
-    return `
-You are an expert event researcher. Find all upcoming ${topic} events in the following cities: ${cityList}.
-The events should be within the next ${dateRange}.
-
-CRITICAL: I already know about the following events. Exclude these specific events from your search results to avoid duplicates:
-${existingEventNames}
-
-Return the results as a JSON array. Each object in the array must conform to the following schema:
-{
-  "name": "Event Name",
-  "url": "https://example.com",
-  "startDate": "YYYY-MM-DD",
-  "venue": "Venue Name or Address"
-}
-    `.trim();
   }
 
   async create(createEventDto: CreateEventDto): Promise<Event> {
