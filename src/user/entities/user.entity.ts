@@ -19,10 +19,16 @@ export class User extends BaseEntity {
   @Column({ default: true })
   is_active: boolean;
 
-  @ManyToOne(() => Organization, (organization) => organization.users)
+  @ManyToOne(() => Organization, (organization) => organization.users, {
+    nullable: true,
+    onDelete: 'CASCADE',
+  })
   organization: Organization;
 
-  @ManyToOne(() => Team, (team) => team.members)
+  @ManyToOne(() => Team, (team) => team.members, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
   team: Team;
 
   @ManyToMany(() => Role, { cascade: true, eager: true })

@@ -9,10 +9,12 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { LocalStrategy } from './strategies/local.strategy';
 import { CaslModule } from './casl/casl.module';
 import { CaslGuard } from './guards/casl.guard';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { PermissionsService } from './permissions.service';
 import { User } from '../user/entities/user.entity';
 import { Organization } from '../organization/entities/organization.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { Event } from '../event/entities/event.entity';
 
 @Module({
   imports: [
@@ -27,16 +29,17 @@ import { TypeOrmModule } from '@nestjs/typeorm';
       inject: [ConfigService],
     }),
     CaslModule,
-    TypeOrmModule.forFeature([User, Organization]),
+    TypeOrmModule.forFeature([User, Organization, Event]),
   ],
   providers: [
     AuthService,
     JwtStrategy,
     LocalStrategy,
     CaslGuard,
+    JwtAuthGuard,
     PermissionsService,
   ],
   controllers: [AuthController],
-  exports: [CaslModule, PermissionsService],
+  exports: [CaslModule, PermissionsService, CaslGuard, JwtAuthGuard],
 })
 export class AuthModule {}

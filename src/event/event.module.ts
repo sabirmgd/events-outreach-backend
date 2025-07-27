@@ -9,6 +9,7 @@ import { EventService } from './event.service';
 import { GeographyModule } from '@geography/geography.module';
 import { CompanyModule } from '@company/company.module';
 import { JobsModule } from '@jobs/jobs.module';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { JobsModule } from '@jobs/jobs.module';
     GeographyModule,
     CompanyModule,
     JobsModule,
+    AuthModule,
   ],
   providers: [EventService],
   controllers: [EventController],

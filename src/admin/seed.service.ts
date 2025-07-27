@@ -38,6 +38,11 @@ export class SeedService implements OnModuleInit {
       { action: Action.Read, subject: Subject.User },
       { action: Action.Update, subject: Subject.User },
       { action: Action.Delete, subject: Subject.User },
+      // Event Permissions
+      { action: Action.Create, subject: Subject.Event },
+      { action: Action.Read, subject: Subject.Event },
+      { action: Action.Update, subject: Subject.Event },
+      { action: Action.Delete, subject: Subject.Event },
     ];
 
     for (const p of permissions) {

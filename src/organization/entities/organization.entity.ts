@@ -2,6 +2,7 @@ import { Column, Entity, OneToMany } from 'typeorm';
 import { User } from '../../user/entities/user.entity';
 import { Team } from './team.entity';
 import { OutreachSequence } from '../../outreach/entities/outreach-sequence.entity';
+import { Event } from '../../event/entities/event.entity';
 import { BaseEntity } from '../../common/entities/base.entity';
 
 @Entity('organizations')
@@ -26,4 +27,10 @@ export class Organization extends BaseEntity {
     onDelete: 'CASCADE',
   })
   outreachSequences: OutreachSequence[];
+
+  @OneToMany(() => Event, (event) => event.organization, {
+    cascade: true,
+    onDelete: 'CASCADE',
+  })
+  events: Event[];
 }

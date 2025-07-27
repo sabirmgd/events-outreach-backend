@@ -8,13 +8,16 @@ import {
 } from '@casl/ability';
 import { User } from '../../user/entities/user.entity';
 import { Organization } from '../../organization/entities/organization.entity';
+import { Event } from '../../event/entities/event.entity';
 import { JwtPayload } from '../dto/jwt-payload.dto';
 import { Action } from '../enums/action.enum';
 import { Subject } from '../enums/subject.enum';
 
 // SUPER_ADMIN users are granted full CRUD permissions on all resources.
 
-export type Subjects = InferSubjects<typeof User | typeof Organization> | 'all';
+export type Subjects =
+  | InferSubjects<typeof User | typeof Organization | typeof Event>
+  | 'all';
 
 export type AppAbility = Ability<[Action, Subjects]>;
 
@@ -33,11 +36,20 @@ export class CaslAbilityFactory {
     } else if (user.organizationId && user.permissions) {
       const orgId = user.organizationId;
       user.permissions.forEach((p) => {
-        if (p.subject === Subject.Organization) {
-          can(p.action as Action, Organization, { id: orgId });
-        }
-        if (p.subject === Subject.User) {
-          can(p.action as Action, User, { organization: { id: orgId } });
+        switch (p.subject) {
+          case Subject.Organization:
+            can(p.action, Organization, { id: orgId });
+            break;
+          case Subject.User:
+            can(p.action, User, { organization: { id: orgId } });
+            break;
+          case Subject.Event:
+            can(p.action, Event, {
+              organization: { id: orgId },
+            } as any);
+            break;
+          default:
+            break;
         }
       });
     }

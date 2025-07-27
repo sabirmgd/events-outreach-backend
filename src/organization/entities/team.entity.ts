@@ -5,7 +5,9 @@ import { BaseEntity } from '../../common/entities/base.entity';
 
 @Entity('teams')
 export class Team extends BaseEntity {
-  @ManyToOne(() => Organization, (organization) => organization.teams)
+  @ManyToOne(() => Organization, (organization) => organization.teams, {
+    onDelete: 'CASCADE',
+  })
   organization: Organization;
 
   @Column()
