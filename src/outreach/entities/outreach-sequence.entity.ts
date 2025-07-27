@@ -3,12 +3,15 @@ import {
   CreateDateColumn,
   Entity,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { Event } from '../../event/entities/event.entity';
+import { Conversation } from './conversation.entity';
+import { Organization } from '../../organization/entities/organization.entity';
 
-@Entity()
+@Entity('outreach_sequences')
 export class OutreachSequence {
   @PrimaryGeneratedColumn()
   id: number;
@@ -21,6 +24,12 @@ export class OutreachSequence {
 
   @ManyToOne(() => Event, { nullable: true })
   event: Event;
+
+  @ManyToOne(() => Organization, { nullable: true })
+  organization: Organization;
+
+  @OneToMany(() => Conversation, (conversation) => conversation.sequence)
+  conversations: Conversation[];
 
   @Column('jsonb', { nullable: true })
   company_filter_json: object;

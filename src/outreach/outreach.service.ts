@@ -1,15 +1,16 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { EventService } from '../event/event.service';
 import { PersonaService } from '../persona/persona.service';
 import { CreateOutreachSequenceDto } from './dto/create-outreach-sequence.dto';
-import { CreateOutreachStepTemplateDto } from './dto/create-outreach-step-template.dto';
 import { UpdateOutreachSequenceDto } from './dto/update-outreach-sequence.dto';
-import { UpdateOutreachStepTemplateDto } from './dto/update-outreach-step-template.dto';
 import { OutreachSequence } from './entities/outreach-sequence.entity';
 import { OutreachStepTemplate } from './entities/outreach-step-template.entity';
-import { OutreachMessageInstance } from './entities/outreach-message-instance.entity';
+import { Conversation } from './entities/conversation.entity';
+import { Message } from './entities/message.entity';
+import { CreateOutreachStepTemplateDto } from './dto/create-outreach-step-template.dto';
+import { UpdateOutreachStepTemplateDto } from './dto/update-outreach-step-template.dto';
+import { EventService } from '@event/event.service';
 
 @Injectable()
 export class OutreachService {
@@ -18,11 +19,15 @@ export class OutreachService {
     private readonly outreachSequenceRepository: Repository<OutreachSequence>,
     @InjectRepository(OutreachStepTemplate)
     private readonly outreachStepTemplateRepository: Repository<OutreachStepTemplate>,
-    @InjectRepository(OutreachMessageInstance)
-    private readonly outreachMessageInstanceRepository: Repository<OutreachMessageInstance>,
-    private readonly eventService: EventService,
+    @InjectRepository(Conversation)
+    private readonly conversationRepository: Repository<Conversation>,
+    @InjectRepository(Message)
+    private readonly messageRepository: Repository<Message>,
     private readonly personaService: PersonaService,
+    private readonly eventService: EventService,
   ) {}
+
+  // ... (Sequence and Step Template CRUD methods remain largely the same)
 
   async create(
     createOutreachSequenceDto: CreateOutreachSequenceDto,
@@ -79,8 +84,6 @@ export class OutreachService {
     return { deleted: true, id };
   }
 
-  // --- Step Template Methods ---
-
   async createStep(
     createOutreachStepTemplateDto: CreateOutreachStepTemplateDto,
   ): Promise<OutreachStepTemplate> {
@@ -135,28 +138,50 @@ export class OutreachService {
 
   // --- Orchestration Methods ---
 
-  async generateMessages(sequenceId: number) {
+  async initiateConversations(sequenceId: number): Promise<{ count: number }> {
     const sequence = await this.findOne(sequenceId);
-    const steps = await this.findAllSteps(sequenceId);
-    // TODO: Implement logic to fetch target audience based on filters
-    const personas = await this.personaService.findAll({}); // Placeholder
+    // TODO: Implement actual filtering based on sequence.company_filter_json and persona_filter_json
+    const personas = await this.personaService.findAll({});
 
-    const instances = [];
-    for (const persona of personas) {
-      for (const step of steps) {
-        const instance = this.outreachMessageInstanceRepository.create({
-          person: persona,
-          sequence,
-          step_template: step,
-          // TODO: Render templates and call LLMs for personalization
-          subject_rendered: `Subject for ${persona.full_name}`,
-          body_rendered: `Body for ${persona.full_name}`,
-        });
-        instances.push(instance);
-      }
+    const firstTemplate = await this.outreachStepTemplateRepository.findOne({
+      where: {
+        sequence: { id: sequenceId },
+        applies_to_stage: 'new',
+        day_offset: 0,
+      },
+    });
+
+    if (!firstTemplate) {
+      throw new NotFoundException(
+        `No initial template (stage: 'new', day_offset: 0) found for sequence ${sequenceId}`,
+      );
     }
 
-    await this.outreachMessageInstanceRepository.save(instances);
-    return { generated: instances.length };
+    for (const person of personas) {
+      const conversation = this.conversationRepository.create({
+        person,
+        sequence,
+        status: 'active',
+        stage: 'new',
+      });
+      await this.conversationRepository.save(conversation);
+
+      // TODO: Implement template rendering (e.g., replacing {{firstName}} with person.first_name)
+      const messageContent =
+        firstTemplate.body_template || 'Hello from the system!';
+
+      const message = this.messageRepository.create({
+        conversation,
+        sender: 'system',
+        content: messageContent,
+        source_template: firstTemplate,
+      });
+      await this.messageRepository.save(message);
+    }
+
+    return { count: personas.length };
   }
+
+  // TODO: Add handleIncomingReply(payload) method
+  // TODO: Add runAutomatedFollowUp() method
 }

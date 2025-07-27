@@ -14,8 +14,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  validate(payload: JwtPayload) {
-    // TODO: Implement user lookup and attach user to request
-    return { userId: payload.sub, username: payload.username };
+  async validate(payload: JwtPayload) {
+    // The JWT is guaranteed to be valid by Passport.
+    // We can trust the payload and use it as the user object on the request.
+    return payload;
   }
 }

@@ -19,6 +19,8 @@ import { JobsModule } from '@jobs/jobs.module';
 import { ToolsModule } from '@tools/tools.module';
 import { QueueModule } from './queue/queue.module';
 import { ClientsModule } from './clients/clients.module';
+import { OrganizationModule } from './organization/organization.module';
+import { AdminModule } from './admin/admin.module';
 
 @Module({
   imports: [
@@ -39,7 +41,7 @@ import { ClientsModule } from './clients/clients.module';
         database: config.get<string>('db.name'),
         ssl: config.get<boolean>('db.ssl'),
         autoLoadEntities: true,
-        synchronize: false, // keep migrations in control
+        synchronize: config.get<string>('app.env') !== 'prod',
       }),
       inject: [ConfigService],
     }),
@@ -56,6 +58,8 @@ import { ClientsModule } from './clients/clients.module';
     ToolsModule,
     QueueModule,
     ClientsModule,
+    OrganizationModule,
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [AppService],

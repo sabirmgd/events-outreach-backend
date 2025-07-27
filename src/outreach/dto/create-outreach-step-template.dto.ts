@@ -5,9 +5,9 @@ export class CreateOutreachStepTemplateDto {
   @IsNotEmpty()
   sequence_id: number;
 
-  @IsInt()
+  @IsString()
   @IsNotEmpty()
-  step_number: number;
+  applies_to_stage: string;
 
   @IsString()
   @IsNotEmpty()

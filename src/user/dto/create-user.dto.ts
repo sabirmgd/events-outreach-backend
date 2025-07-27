@@ -4,6 +4,7 @@ import {
   IsOptional,
   IsEmail,
   IsBoolean,
+  IsArray,
 } from 'class-validator';
 
 export class CreateUserDto {
@@ -17,9 +18,14 @@ export class CreateUserDto {
 
   @IsString()
   @IsOptional()
-  role?: string;
+  password?: string;
 
   @IsBoolean()
   @IsOptional()
   is_active?: boolean;
+
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  roleNames?: string[];
 }

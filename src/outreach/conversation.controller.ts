@@ -9,51 +9,45 @@ import {
   Post,
 } from '@nestjs/common';
 import { CreateOutreachSequenceDto } from './dto/create-outreach-sequence.dto';
-import { CreateOutreachStepTemplateDto } from './dto/create-outreach-step-template.dto';
 import { UpdateOutreachSequenceDto } from './dto/update-outreach-sequence.dto';
-import { UpdateOutreachStepTemplateDto } from './dto/update-outreach-step-template.dto';
 import { OutreachService } from './outreach.service';
+import { CreateOutreachStepTemplateDto } from './dto/create-outreach-step-template.dto';
 
-@Controller('outreach-sequences')
-export class OutreachController {
+@Controller('outreach')
+export class ConversationController {
   constructor(private readonly outreachService: OutreachService) {}
 
-  @Post()
-  create(@Body() createOutreachSequenceDto: CreateOutreachSequenceDto) {
+  // --- Sequence Endpoints ---
+  @Post('sequences')
+  createSequence(@Body() createOutreachSequenceDto: CreateOutreachSequenceDto) {
     return this.outreachService.create(createOutreachSequenceDto);
   }
 
-  @Get()
-  findAll() {
+  @Get('sequences')
+  findAllSequences() {
     return this.outreachService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: number) {
+  @Get('sequences/:id')
+  findOneSequence(@Param('id', ParseIntPipe) id: number) {
     return this.outreachService.findOne(id);
   }
 
-  @Patch(':id')
-  update(
+  @Patch('sequences/:id')
+  updateSequence(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateOutreachSequenceDto: UpdateOutreachSequenceDto,
   ) {
     return this.outreachService.update(id, updateOutreachSequenceDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number) {
+  @Delete('sequences/:id')
+  removeSequence(@Param('id', ParseIntPipe) id: number) {
     return this.outreachService.remove(id);
   }
 
-  @Post(':id/generate-messages')
-  generateMessages(@Param('id', ParseIntPipe) id: number) {
-    return this.outreachService.generateMessages(id);
-  }
-
   // --- Step Template Endpoints ---
-
-  @Post(':sequenceId/steps')
+  @Post('sequences/:sequenceId/steps')
   createStep(
     @Param('sequenceId', ParseIntPipe) sequenceId: number,
     @Body() createOutreachStepTemplateDto: CreateOutreachStepTemplateDto,
@@ -64,26 +58,17 @@ export class OutreachController {
     });
   }
 
-  @Get(':sequenceId/steps')
+  @Get('sequences/:sequenceId/steps')
   findAllSteps(@Param('sequenceId', ParseIntPipe) sequenceId: number) {
     return this.outreachService.findAllSteps(sequenceId);
   }
 
-  @Get('steps/:id')
-  findOneStep(@Param('id', ParseIntPipe) id: number) {
-    return this.outreachService.findOneStep(id);
+  // --- Orchestration Endpoints ---
+  @Post('sequences/:id/initiate')
+  initiateConversations(@Param('id', ParseIntPipe) id: number) {
+    return this.outreachService.initiateConversations(id);
   }
 
-  @Patch('steps/:id')
-  updateStep(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() updateOutreachStepTemplateDto: UpdateOutreachStepTemplateDto,
-  ) {
-    return this.outreachService.updateStep(id, updateOutreachStepTemplateDto);
-  }
-
-  @Delete('steps/:id')
-  removeStep(@Param('id', ParseIntPipe) id: number) {
-    return this.outreachService.removeStep(id);
-  }
+  // TODO: Add endpoints for getting conversations and messages
+  // TODO: Add webhook endpoint for incoming replies
 }
