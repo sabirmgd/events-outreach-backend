@@ -10,12 +10,30 @@ import { Role } from '../auth/entities/role.entity';
 import { User } from '../user/entities/user.entity';
 import { AuthModule } from '../auth/auth.module';
 import { Team } from '../organization/entities/team.entity';
+import { Event } from '../event/entities/event.entity';
+import { City } from '../geography/entities/city.entity';
+import { Company } from '../company/entities/company.entity';
+import { EventSponsor } from '../event/entities/event-sponsor.entity';
+import { Person } from '../persona/entities/person.entity';
+import { CompanyPersonRole } from '../persona/entities/company-person-role.entity';
 
 @Module({
   imports: [
     UserModule,
     AuthModule,
-    TypeOrmModule.forFeature([Organization, Team, Permission, Role, User]),
+    TypeOrmModule.forFeature([
+      Organization,
+      Team,
+      Permission,
+      Role,
+      User,
+      Event,
+      City,
+      Company,
+      EventSponsor,
+      Person,
+      CompanyPersonRole,
+    ]),
   ],
   controllers: [AdminController],
   providers: [AdminService, SeedService],
