@@ -1,0 +1,273 @@
+import { Injectable, Logger } from '@nestjs/common';
+import { Agent, AgentMethod } from '@/agent/decorators';
+import { PromptsService } from '@/prompts/services/prompts.service';
+import { PerplexityClient } from '@/clients/perplexity.client';
+import { EventService } from '@/event/event.service';
+import { CompanyService } from '@/company/company.service';
+
+interface SearchEventsParams {
+  cities: string[];
+  industries?: string[];
+  yearRange?: {
+    start: number;
+    end: number;
+  };
+  maxResults?: number;
+}
+
+interface EnrichEventParams {
+  eventId: number;
+  fields?: string[];
+}
+
+@Injectable()
+@Agent({
+  id: 'event-discovery',
+  name: 'Event Discovery Agent',
+  description: 'Discovers and enriches events for outreach campaigns',
+  category: 'discovery',
+})
+export class EventDiscoveryAgent {
+  private readonly logger = new Logger(EventDiscoveryAgent.name);
+
+  constructor(
+    private readonly promptsService: PromptsService,
+    private readonly perplexityClient: PerplexityClient,
+    private readonly eventService: EventService,
+    private readonly companyService: CompanyService,
+  ) {}
+
+  @AgentMethod({
+    description: 'Search for events in specified cities and industries',
+    parameters: [
+      {
+        name: 'cities',
+        type: 'string[]',
+        description: 'List of cities to search for events',
+        required: true,
+      },
+      {
+        name: 'industries',
+        type: 'string[]',
+        description: 'Optional list of industries to filter by',
+        required: false,
+      },
+      {
+        name: 'yearRange',
+        type: 'object',
+        description: 'Year range for event search',
+        required: false,
+      },
+      {
+        name: 'maxResults',
+        type: 'number',
+        description: 'Maximum number of results to return',
+        required: false,
+        default: 20,
+      },
+    ],
+  })
+  async searchEvents(params: SearchEventsParams, context?: any): Promise<any> {
+    const { cities, industries, yearRange, maxResults = 20 } = params;
+
+    try {
+      // Report initial progress
+      if (context?.reportProgress) {
+        await context.reportProgress(10, 'Loading event search prompt', 1, 5);
+      }
+
+      // Get the prompt for event search
+      const prompt = await this.promptsService.findByKey('event-search');
+      const publishedVersion = await this.promptsService.getPublishedVersion(
+        prompt.id,
+      );
+
+      if (!publishedVersion) {
+        throw new Error('No published version found for event search prompt');
+      }
+
+      // Prepare variables for the prompt
+      const currentYear = new Date().getFullYear();
+      const variables = {
+        cities: cities.join(', '),
+        industries: industries?.join(', ') || 'all industries',
+        yearStart: yearRange?.start || currentYear,
+        yearEnd: yearRange?.end || currentYear + 1,
+        maxResults,
+      };
+
+      // Preview the prompt
+      const { preview } = await this.promptsService.previewPrompt(
+        prompt.id,
+        publishedVersion.id,
+        { variables },
+      );
+
+      if (context?.reportProgress) {
+        await context.reportProgress(30, 'Searching for events', 2, 5);
+      }
+
+      // Execute the search using Perplexity
+      const searchResults = await this.perplexityClient.search({
+        query: preview.preview,
+        max_results: maxResults,
+      });
+
+      if (context?.reportProgress) {
+        await context.reportProgress(60, 'Processing search results', 3, 5);
+      }
+
+      // Parse and structure the results
+      const events = this.parseEventResults(searchResults);
+
+      if (context?.reportProgress) {
+        await context.reportProgress(80, 'Saving events to database', 4, 5);
+      }
+
+      // Save events to database
+      const savedEvents = [];
+      for (const eventData of events) {
+        try {
+          const event = await this.eventService.create(eventData);
+          savedEvents.push(event);
+        } catch (error) {
+          this.logger.warn(`Failed to save event: ${error.message}`);
+        }
+      }
+
+      if (context?.reportProgress) {
+        await context.reportProgress(100, 'Event search completed', 5, 5);
+      }
+
+      return {
+        totalFound: events.length,
+        totalSaved: savedEvents.length,
+        events: savedEvents,
+      };
+    } catch (error) {
+      this.logger.error(`Event search failed: ${error.message}`, error.stack);
+      throw error;
+    }
+  }
+
+  @AgentMethod({
+    description: 'Enrich an existing event with additional information',
+    parameters: [
+      {
+        name: 'eventId',
+        type: 'number',
+        description: 'ID of the event to enrich',
+        required: true,
+      },
+      {
+        name: 'fields',
+        type: 'string[]',
+        description: 'Specific fields to enrich',
+        required: false,
+      },
+    ],
+  })
+  async enrichEvent(params: EnrichEventParams, context?: any): Promise<any> {
+    const { eventId, fields } = params;
+
+    try {
+      if (context?.reportProgress) {
+        await context.reportProgress(10, 'Loading event data', 1, 4);
+      }
+
+      // Get the event
+      const event = await this.eventService.findOne(eventId);
+      if (!event) {
+        throw new Error(`Event with ID ${eventId} not found`);
+      }
+
+      if (context?.reportProgress) {
+        await context.reportProgress(30, 'Loading enrichment prompt', 2, 4);
+      }
+
+      // Get the enrichment prompt
+      const prompt = await this.promptsService.findByKey('event-enrichment');
+      const publishedVersion = await this.promptsService.getPublishedVersion(
+        prompt.id,
+      );
+
+      if (!publishedVersion) {
+        throw new Error(
+          'No published version found for event enrichment prompt',
+        );
+      }
+
+      // Prepare variables
+      const variables = {
+        eventName: event.name,
+        eventWebsite: event.website_url || 'unknown',
+        eventDate: event.start_dt.toISOString(),
+        fieldsToEnrich: fields?.join(', ') || 'all available fields',
+      };
+
+      // Preview the prompt
+      const { preview } = await this.promptsService.previewPrompt(
+        prompt.id,
+        publishedVersion.id,
+        { variables },
+      );
+
+      if (context?.reportProgress) {
+        await context.reportProgress(60, 'Enriching event data', 3, 4);
+      }
+
+      // Execute enrichment
+      const enrichmentData = await this.perplexityClient.search({
+        query: preview.preview,
+        max_results: 5,
+      });
+
+      // Parse and update event
+      const enrichedFields = this.parseEnrichmentData(enrichmentData);
+      const updatedEvent = await this.eventService.update(
+        eventId,
+        enrichedFields,
+      );
+
+      if (context?.reportProgress) {
+        await context.reportProgress(100, 'Event enrichment completed', 4, 4);
+      }
+
+      return {
+        eventId,
+        enrichedFields: Object.keys(enrichedFields),
+        event: updatedEvent,
+      };
+    } catch (error) {
+      this.logger.error(
+        `Event enrichment failed: ${error.message}`,
+        error.stack,
+      );
+      throw error;
+    }
+  }
+
+  private parseEventResults(searchResults: any): any[] {
+    // This would parse the search results into structured event data
+    // For now, returning mock data
+    return [
+      {
+        name: 'Tech Summit 2024',
+        start_dt: new Date('2024-09-15'),
+        end_dt: new Date('2024-09-17'),
+        website_url: 'https://techsummit2024.com',
+        status: 'planned',
+      },
+    ];
+  }
+
+  private parseEnrichmentData(enrichmentData: any): any {
+    // This would parse the enrichment results into structured data
+    // For now, returning mock data
+    return {
+      description: 'Annual technology conference focusing on AI and innovation',
+      expected_attendees: 5000,
+      sponsor_tiers: ['Platinum', 'Gold', 'Silver'],
+    };
+  }
+}

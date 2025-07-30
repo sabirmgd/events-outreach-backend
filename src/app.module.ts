@@ -19,6 +19,9 @@ import { JobsModule } from '@jobs/jobs.module';
 import { ToolsModule } from '@tools/tools.module';
 import { QueueModule } from './queue/queue.module';
 import { ClientsModule } from './clients/clients.module';
+import { PromptsModule } from './prompts/prompts.module';
+import { AgentModule } from './agent/agent.module';
+import { AgentsModule } from './agents/agents.module';
 
 @Module({
   imports: [
@@ -56,6 +59,9 @@ import { ClientsModule } from './clients/clients.module';
     ToolsModule,
     QueueModule,
     ClientsModule,
+    PromptsModule,
+    AgentModule,
+    AgentsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

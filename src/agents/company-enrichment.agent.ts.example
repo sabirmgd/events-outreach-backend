@@ -1,0 +1,253 @@
+import { Injectable, Logger } from '@nestjs/common';
+import { Agent, AgentMethod } from '@/agent/decorators';
+import { PromptsService } from '@/prompts/services/prompts.service';
+import { CompanyService } from '@/company/company.service';
+import { GoogleGeminiProvider } from '@/tools/providers/google-gemini.provider';
+
+interface EnrichCompanyParams {
+  companyId: number;
+  enrichmentType?: 'basic' | 'detailed' | 'financial';
+}
+
+interface FindSimilarCompaniesParams {
+  companyId: number;
+  limit?: number;
+  minSimilarity?: number;
+}
+
+@Injectable()
+@Agent({
+  id: 'company-enrichment',
+  name: 'Company Enrichment Agent',
+  description: 'Enriches company data and finds similar companies',
+  category: 'enrichment',
+})
+export class CompanyEnrichmentAgent {
+  private readonly logger = new Logger(CompanyEnrichmentAgent.name);
+
+  constructor(
+    private readonly promptsService: PromptsService,
+    private readonly companyService: CompanyService,
+    private readonly geminiProvider: GoogleGeminiProvider,
+  ) {}
+
+  @AgentMethod({
+    description: 'Enrich company data with additional information',
+    parameters: [
+      {
+        name: 'companyId',
+        type: 'number',
+        description: 'ID of the company to enrich',
+        required: true,
+      },
+      {
+        name: 'enrichmentType',
+        type: 'string',
+        description: 'Type of enrichment: basic, detailed, or financial',
+        required: false,
+        default: 'basic',
+      },
+    ],
+  })
+  async enrichCompany(
+    params: EnrichCompanyParams,
+    context?: any,
+  ): Promise<any> {
+    const { companyId, enrichmentType = 'basic' } = params;
+
+    try {
+      if (context?.reportProgress) {
+        await context.reportProgress(10, 'Loading company data', 1, 5);
+      }
+
+      // Get the company
+      const company = await this.companyService.findOne(companyId);
+      if (!company) {
+        throw new Error(`Company with ID ${companyId} not found`);
+      }
+
+      if (context?.reportProgress) {
+        await context.reportProgress(20, 'Loading enrichment prompt', 2, 5);
+      }
+
+      // Get the appropriate prompt based on enrichment type
+      const promptKey = `company-enrichment-${enrichmentType}`;
+      const prompt = await this.promptsService.findByKey(promptKey);
+      const publishedVersion = await this.promptsService.getPublishedVersion(
+        prompt.id,
+      );
+
+      if (!publishedVersion) {
+        throw new Error(`No published version found for ${promptKey} prompt`);
+      }
+
+      // Prepare variables
+      const variables = {
+        companyName: company.name,
+        companyWebsite: company.website || 'unknown',
+        companyIndustry: company.primary_industry || 'unknown',
+        enrichmentLevel: enrichmentType,
+      };
+
+      // Preview the prompt
+      const { preview } = await this.promptsService.previewPrompt(
+        prompt.id,
+        publishedVersion.id,
+        { variables },
+      );
+
+      if (context?.reportProgress) {
+        await context.reportProgress(40, 'Gathering company information', 3, 5);
+      }
+
+      // Execute enrichment using Gemini
+      const enrichmentData = await this.geminiProvider.generateText({
+        prompt: preview.preview,
+        temperature: 0.3,
+        maxTokens: 2000,
+      });
+
+      if (context?.reportProgress) {
+        await context.reportProgress(70, 'Processing enrichment data', 4, 5);
+      }
+
+      // Parse and structure the enrichment data
+      const parsedData = this.parseEnrichmentData(
+        enrichmentData,
+        enrichmentType,
+      );
+
+      // Update company with enriched data
+      const updatedCompany = await this.companyService.update(
+        companyId,
+        parsedData,
+      );
+
+      if (context?.reportProgress) {
+        await context.reportProgress(100, 'Company enrichment completed', 5, 5);
+      }
+
+      return {
+        companyId,
+        enrichmentType,
+        enrichedFields: Object.keys(parsedData),
+        company: updatedCompany,
+      };
+    } catch (error) {
+      this.logger.error(
+        `Company enrichment failed: ${error.message}`,
+        error.stack,
+      );
+      throw error;
+    }
+  }
+
+  @AgentMethod({
+    description: 'Find companies similar to a given company',
+    parameters: [
+      {
+        name: 'companyId',
+        type: 'number',
+        description: 'ID of the company to find similar companies for',
+        required: true,
+      },
+      {
+        name: 'limit',
+        type: 'number',
+        description: 'Maximum number of similar companies to return',
+        required: false,
+        default: 10,
+      },
+      {
+        name: 'minSimilarity',
+        type: 'number',
+        description: 'Minimum similarity score (0-1)',
+        required: false,
+        default: 0.7,
+      },
+    ],
+  })
+  async findSimilarCompanies(
+    params: FindSimilarCompaniesParams,
+    context?: any,
+  ): Promise<any> {
+    const { companyId, limit = 10, minSimilarity = 0.7 } = params;
+
+    try {
+      if (context?.reportProgress) {
+        await context.reportProgress(20, 'Loading company data', 1, 3);
+      }
+
+      // Get the company
+      const company = await this.companyService.findOne(companyId);
+      if (!company) {
+        throw new Error(`Company with ID ${companyId} not found`);
+      }
+
+      if (context?.reportProgress) {
+        await context.reportProgress(50, 'Calculating similarities', 2, 3);
+      }
+
+      // Find similar companies using the service
+      const similarCompanies = await this.companyService.findSimilar(
+        companyId,
+        limit,
+        minSimilarity,
+      );
+
+      if (context?.reportProgress) {
+        await context.reportProgress(100, 'Similar companies found', 3, 3);
+      }
+
+      return {
+        sourceCompany: {
+          id: company.id,
+          name: company.name,
+        },
+        similarCompanies: similarCompanies.map((sc) => ({
+          id: sc.id,
+          name: sc.name,
+          similarity: sc.similarity,
+          industry: sc.primary_industry,
+        })),
+        totalFound: similarCompanies.length,
+      };
+    } catch (error) {
+      this.logger.error(
+        `Finding similar companies failed: ${error.message}`,
+        error.stack,
+      );
+      throw error;
+    }
+  }
+
+  private parseEnrichmentData(rawData: string, enrichmentType: string): any {
+    // This would parse the AI-generated enrichment data
+    // For now, returning mock data based on enrichment type
+    const baseData = {
+      description:
+        'AI-powered technology company focusing on enterprise solutions',
+      employee_range: '100-500',
+    };
+
+    if (enrichmentType === 'detailed') {
+      return {
+        ...baseData,
+        founded_year: 2015,
+        headquarters: 'San Francisco, CA',
+        key_products: ['AI Platform', 'Data Analytics Suite'],
+      };
+    }
+
+    if (enrichmentType === 'financial') {
+      return {
+        ...baseData,
+        revenue_range: '$10M-$50M',
+        funding_stage: 'Series B',
+        total_funding: '$25M',
+      };
+    }
+
+    return baseData;
+  }
+}

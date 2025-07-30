@@ -28,7 +28,8 @@ export class Job {
 
   @Column({
     type: 'jsonb',
-    comment: 'The initial parameters used to trigger the job, e.g., { "cities": ["SF"] }',
+    comment:
+      'The initial parameters used to trigger the job, e.g., { "cities": ["SF"] }',
   })
   inputParameters: Record<string, any>;
 
@@ -64,4 +65,4 @@ export class Job {
 
   @UpdateDateColumn()
   updatedAt: Date;
-} 
+}
