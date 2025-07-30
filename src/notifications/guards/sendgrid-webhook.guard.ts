@@ -47,8 +47,8 @@ export class SendGridWebhookGuard implements CanActivate {
     }
 
     const request = context.switchToHttp().getRequest();
-    const signature = request.headers[EventWebhookHeader.SIGNATURE];
-    const timestamp = request.headers[EventWebhookHeader.TIMESTAMP];
+    const signature = request.headers[EventWebhookHeader.SIGNATURE()];
+    const timestamp = request.headers[EventWebhookHeader.TIMESTAMP()];
     const rawBody = request.rawBody;
 
     if (!signature || !timestamp || !rawBody) {

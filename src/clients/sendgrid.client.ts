@@ -40,10 +40,28 @@ export class SendGridClient {
         Authorization: `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
       },
+      timeout: 10000, // 10 second timeout
     });
 
     this.defaultSenderEmail =
       defaultSenderEmail || process.env.SENDER_EMAIL || '';
+  }
+
+  private handleError(error: unknown): never {
+    if (axios.isAxiosError(error) && error.response) {
+      const sendGridError = error.response.data as SendGridErrorResponse;
+      const errorMessage =
+        sendGridError.errors
+          ?.map(
+            (err) =>
+              `${err.message}${err.field ? ` (field: ${err.field})` : ''}`,
+          )
+          .join(', ') || 'Unknown SendGrid error';
+      throw new Error(
+        `SendGrid API error (${error.response.status}): ${errorMessage}`,
+      );
+    }
+    throw new Error(`SendGrid API request failed: ${error}`);
   }
 
   private async request<T>(
@@ -61,20 +79,7 @@ export class SendGridClient {
       });
       return response.data;
     } catch (error) {
-      if (axios.isAxiosError(error) && error.response) {
-        const sendGridError = error.response.data as SendGridErrorResponse;
-        const errorMessage =
-          sendGridError.errors
-            ?.map(
-              (err) =>
-                `${err.message}${err.field ? ` (field: ${err.field})` : ''}`,
-            )
-            .join(', ') || 'Unknown SendGrid error';
-        throw new Error(
-          `SendGrid API error (${error.response.status}): ${errorMessage}`,
-        );
-      }
-      throw new Error(`SendGrid API request failed: ${error}`);
+      this.handleError(error);
     }
   }
 
@@ -119,11 +124,13 @@ export class SendGridClient {
       mailData.from = { email: this.defaultSenderEmail };
     }
 
-    return this.request<SendGridSuccessResponse>(
-      'post',
-      '/v3/mail/send',
-      mailData,
-    );
+    try {
+      const response = await this.client.post('/v3/mail/send', mailData);
+      const messageId = response.headers['x-message-id'];
+      return { message_id: messageId };
+    } catch (error) {
+      this.handleError(error);
+    }
   }
 
   /**
@@ -137,8 +144,11 @@ export class SendGridClient {
 
     const personalization: PersonalizationObject = {
       to: toEmails,
-      subject: emailData.subject,
     };
+
+    if (emailData.subject) {
+      personalization.subject = emailData.subject;
+    }
 
     // Add CC if provided
     if (emailData.cc) {
@@ -174,6 +184,9 @@ export class SendGridClient {
 
     // Add content if not using template
     if (!emailData.template_id) {
+      if (!emailData.subject) {
+        throw new Error('Subject must be provided for non-template emails');
+      }
       const content: ContentObject[] = [];
       if (emailData.text) {
         content.push({ type: 'text/plain', value: emailData.text });
@@ -292,7 +305,6 @@ export class SendGridClient {
     return this.sendSimpleEmail({
       to,
       from,
-      subject: '', // Will be overridden by template
       template_id: templateId,
       dynamic_template_data: dynamicTemplateData,
     });

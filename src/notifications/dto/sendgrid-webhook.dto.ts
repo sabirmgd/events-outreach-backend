@@ -8,7 +8,7 @@ import {
   IsIn,
   IsBoolean,
 } from 'class-validator';
-import { Type } from 'class-transformer';
+import { Type, Transform } from 'class-transformer';
 
 export enum SendGridEventType {
   PROCESSED = 'processed',
@@ -22,6 +22,14 @@ export enum SendGridEventType {
   UNSUBSCRIBE = 'unsubscribe',
   GROUP_UNSUBSCRIBE = 'group_unsubscribe',
   GROUP_RESUBSCRIBE = 'group_resubscribe',
+}
+
+export class UrlOffset {
+  @IsNumber()
+  index: number;
+
+  @IsString()
+  type: string;
 }
 
 export class SendGridEvent {
@@ -64,9 +72,10 @@ export class SendGridEvent {
   @IsOptional()
   url?: string;
 
-  @IsNumber()
+  @ValidateNested()
   @IsOptional()
-  url_offset?: { index: number; type: string };
+  @Type(() => UrlOffset)
+  url_offset?: UrlOffset;
 
   // Bounce/Drop specific
   @IsString()
@@ -107,7 +116,8 @@ export class SendGridEvent {
   // SMTP data
   @IsString()
   @IsOptional()
-  'smtp-id'?: string;
+  @Transform(({ obj }) => obj['smtp-id'])
+  smtpId?: string;
 
   @IsString()
   @IsOptional()
@@ -115,6 +125,7 @@ export class SendGridEvent {
 
   // TLS data
   @IsBoolean()
+  @Transform(({ value }) => value === '1' || value === true)
   @IsOptional()
   tls?: boolean;
 
@@ -134,7 +145,6 @@ export class SendGridEvent {
   };
 
   // Pool data
-  @IsString()
   @IsOptional()
   pool?: {
     name: string;

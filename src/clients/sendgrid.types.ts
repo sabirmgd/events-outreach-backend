@@ -144,7 +144,7 @@ export interface MailSendRequest {
 export interface SimpleEmailRequest {
   to: string | string[] | EmailObject | EmailObject[];
   from?: string | EmailObject;
-  subject: string;
+  subject?: string;
   text?: string;
   html?: string;
   cc?: string | string[] | EmailObject | EmailObject[];
