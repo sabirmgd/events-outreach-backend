@@ -50,7 +50,7 @@ export class AuthService {
           JSON.stringify({ action: p.action, subject: p.subject }),
         ),
       ),
-    ).map((p) => JSON.parse(p as string));
+    ).map((p) => JSON.parse(p));
 
     const payload: JwtPayload = {
       sub: user.id,

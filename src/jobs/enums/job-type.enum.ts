@@ -1,6 +1,8 @@
 export enum JobType {
-  DISCOVER_EVENTS = 'DISCOVER_EVENTS',
-  SCRAPE_SPONSORS = 'SCRAPE_SPONSORS',
-  ENRICH_COMPANY = 'ENRICH_COMPANY',
-  DISCOVER_PERSONAS = 'DISCOVER_PERSONAS',
-} 
+  EVENT_DISCOVERY = 'event-discovery',
+  PROSPECT_DISCOVERY = 'prospect-discovery',
+  CONVERSATION_PROCESSING = 'conversation-processing',
+  SCRAPE_SPONSORS = 'scrape-sponsors',
+  ENRICH_COMPANY = 'enrich-company',
+  DISCOVER_PERSONAS = 'discover-personas',
+}

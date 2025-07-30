@@ -10,6 +10,7 @@ import {
 import { Event } from '../../event/entities/event.entity';
 import { Conversation } from './conversation.entity';
 import { Organization } from '../../organization/entities/organization.entity';
+import { OutreachStepTemplate } from './outreach-step-template.entity';
 
 @Entity('outreach_sequences')
 export class OutreachSequence {
@@ -31,11 +32,17 @@ export class OutreachSequence {
   @OneToMany(() => Conversation, (conversation) => conversation.sequence)
   conversations: Conversation[];
 
-  @Column('jsonb', { nullable: true })
-  company_filter_json: object;
+  @OneToMany(() => OutreachStepTemplate, (step) => step.sequence)
+  steps: OutreachStepTemplate[];
 
-  @Column('jsonb', { nullable: true })
-  persona_filter_json: object;
+  @Column({ type: 'text', nullable: true })
+  discovery_prompt: string;
+
+  @Column({ type: 'text', nullable: true })
+  outreach_context: string;
+
+  @Column({ type: 'jsonb', nullable: true })
+  template_variables: Record<string, string>;
 
   @Column({ default: 'active' })
   status: string;

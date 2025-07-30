@@ -7,4 +7,4 @@ export class CreateJobDto {
 
   @IsObject()
   inputParameters: Record<string, any>;
-} 
+}

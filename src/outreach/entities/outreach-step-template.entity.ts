@@ -19,6 +19,15 @@ export class OutreachStepTemplate {
   @Column()
   channel: string; // email, linkedin_conn, linkedin_msg, follow_up
 
+  @Column({ nullable: true })
+  channel_strategy: string;
+
+  @Column({ default: false })
+  use_ai_generation: boolean;
+
+  @Column({ type: 'varchar', length: 20, nullable: true })
+  message_length: 'short' | 'medium' | 'long';
+
   @Column()
   day_offset: number;
 

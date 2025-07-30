@@ -21,6 +21,7 @@ import { QueueModule } from './queue/queue.module';
 import { ClientsModule } from './clients/clients.module';
 import { OrganizationModule } from './organization/organization.module';
 import { AdminModule } from './admin/admin.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -60,6 +61,7 @@ import { AdminModule } from './admin/admin.module';
     ClientsModule,
     OrganizationModule,
     AdminModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
