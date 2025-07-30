@@ -21,7 +21,7 @@ import { QueueModule } from './queue/queue.module';
 import { ClientsModule } from './clients/clients.module';
 import { PromptsModule } from './prompts/prompts.module';
 import { AgentModule } from './agent/agent.module';
-import { AgentsModule } from './agents/agents.module';
+import { AgentsModule } from './agent/agents.module';
 
 @Module({
   imports: [

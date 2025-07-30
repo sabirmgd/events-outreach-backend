@@ -15,7 +15,13 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   validate(payload: JwtPayload) {
-    // TODO: Implement user lookup and attach user to request
-    return { userId: payload.sub, username: payload.username };
+    // Return user object with role and other necessary fields for permissions
+    return { 
+      userId: payload.sub, 
+      username: payload.username,
+      email: payload.email,
+      role: payload.role,
+      permissions: payload.permissions // for custom permissions if any
+    };
   }
 }

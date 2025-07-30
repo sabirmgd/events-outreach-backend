@@ -287,6 +287,29 @@ export class PromptsService {
     });
   }
 
+  async getPublishedPromptBody(key: string): Promise<string> {
+    const prompt = await this.promptRepository.findOne({
+      where: { key },
+      relations: ['versions'],
+    });
+
+    if (!prompt) {
+      throw new NotFoundException(`Prompt with key '${key}' not found`);
+    }
+
+    const publishedVersion = prompt.versions?.find(
+      (v) => v.status === PromptVersionStatus.PUBLISHED,
+    );
+
+    if (!publishedVersion) {
+      throw new NotFoundException(
+        `No published version found for prompt '${key}'`,
+      );
+    }
+
+    return publishedVersion.body;
+  }
+
   // Variable management
   extractVariables(dto: ExtractVariablesDto) {
     return VariableExtractor.extractVariables(dto.template);

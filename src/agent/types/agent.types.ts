@@ -27,6 +27,8 @@ export interface AgentExecutionContext {
   methodName: string;
   startTime: Date;
   user?: any;
+  updateProgress: (percentage: number, message: string, metadata?: any) => void;
+  signal?: AbortSignal; // For cancellation support
 }
 
 export interface AgentExecutionProgress {

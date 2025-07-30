@@ -18,8 +18,14 @@ export class User {
   @Column()
   name: string;
 
+  @Column({ select: false })
+  password: string;
+
   @Column({ nullable: true })
   role: string; // admin, ops, sales
+
+  @Column({ nullable: true, select: false })
+  refreshToken?: string;
 
   @Column({ default: true })
   is_active: boolean;

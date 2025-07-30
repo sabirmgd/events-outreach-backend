@@ -45,16 +45,28 @@ export class PromptsController {
     return await this.promptsService.findAll(query);
   }
 
-  @Get(':id')
-  @RequirePermissions(Permission.PROMPTS_READ)
-  async findOne(@Param('id') id: string) {
-    return await this.promptsService.findOne(id);
-  }
-
   @Get('key/:key')
   @RequirePermissions(Permission.PROMPTS_READ)
   async findByKey(@Param('key') key: string) {
     return await this.promptsService.findByKey(key);
+  }
+
+  @Get('tags')
+  @RequirePermissions(Permission.PROMPTS_READ)
+  async getTags() {
+    return await this.promptsService.getTags();
+  }
+
+  @Post('extract-variables')
+  @RequirePermissions(Permission.PROMPTS_READ)
+  extractVariables(@Body() dto: ExtractVariablesDto) {
+    return this.promptsService.extractVariables(dto);
+  }
+
+  @Get(':id')
+  @RequirePermissions(Permission.PROMPTS_READ)
+  async findOne(@Param('id') id: string) {
+    return await this.promptsService.findOne(id);
   }
 
   @Put(':id')
@@ -93,6 +105,16 @@ export class PromptsController {
     return await this.promptsService.getVersions(id);
   }
 
+  @Get(':id/versions/published')
+  @RequirePermissions(Permission.PROMPTS_READ)
+  async getPublishedVersion(@Param('id') id: string) {
+    const version = await this.promptsService.getPublishedVersion(id);
+    if (!version) {
+      return { message: 'No published version found' };
+    }
+    return version;
+  }
+
   @Get(':id/versions/:versionId')
   @RequirePermissions(Permission.PROMPTS_READ)
   async getVersion(
@@ -112,22 +134,6 @@ export class PromptsController {
     return await this.promptsService.publishVersion(id, versionId, publishDto);
   }
 
-  @Get(':id/versions/published')
-  @RequirePermissions(Permission.PROMPTS_READ)
-  async getPublishedVersion(@Param('id') id: string) {
-    const version = await this.promptsService.getPublishedVersion(id);
-    if (!version) {
-      return { message: 'No published version found' };
-    }
-    return version;
-  }
-
-  // Variable extraction and preview
-  @Post('extract-variables')
-  @RequirePermissions(Permission.PROMPTS_READ)
-  extractVariables(@Body() dto: ExtractVariablesDto) {
-    return this.promptsService.extractVariables(dto);
-  }
 
   @Post(':id/versions/:versionId/preview')
   @RequirePermissions(Permission.PROMPTS_READ)
@@ -137,13 +143,6 @@ export class PromptsController {
     @Body() dto: PreviewPromptDto,
   ) {
     return await this.promptsService.previewPrompt(id, versionId, dto);
-  }
-
-  // Tag management
-  @Get('tags')
-  @RequirePermissions(Permission.PROMPTS_READ)
-  async getTags() {
-    return await this.promptsService.getTags();
   }
 
   @Post('tags')

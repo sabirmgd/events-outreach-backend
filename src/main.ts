@@ -1,14 +1,20 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ValidationPipe } from '@nestjs/common';
+import { ValidationPipe, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { IoAdapter } from '@nestjs/platform-socket.io';
 
 async function bootstrap() {
+  const logger = new Logger('Bootstrap');
+  logger.log('[Bootstrap] Creating NestJS application...');
   const app = await NestFactory.create(AppModule);
+  
+  // Enable WebSocket adapter
+  app.useWebSocketAdapter(new IoAdapter(app));
 
   app.enableCors({
-    origin: 'http://localhost:5173',
+    origin: ['http://localhost:5173', 'http://localhost:3001'],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
   });
@@ -26,11 +32,20 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('api', app, document);
 
+  logger.log('[Bootstrap] Setting up server configuration...');
   const config = app.get(ConfigService);
-  const port = config.get('app.port');
-  await app.listen(port || 3000);
+  const port = config.get('app.port') || 3000;
   
-  console.log(`Application is running on: http://localhost:${port || 3000}`);
-  console.log(`Swagger documentation is available at: http://localhost:${port || 3000}/api`);
+  logger.log(`[Bootstrap] Starting server on port ${port}...`);
+  await app.listen(port);
+  
+  logger.log(`[Bootstrap] ✅ Application is running on: http://localhost:${port}`);
+  logger.log(`[Bootstrap] ✅ Swagger documentation is available at: http://localhost:${port}/api`);
+  logger.log('[Bootstrap] ✅ WebSocket gateway available at: /agent-execution namespace');
+  
+  // Log environment status
+  logger.log(`[Bootstrap] Environment: ${process.env.NODE_ENV || 'development'}`);
+  logger.log(`[Bootstrap] ANTHROPIC_API_KEY: ${process.env.ANTHROPIC_API_KEY ? '✅ Configured' : '❌ Missing'}`);
+  logger.log(`[Bootstrap] TAVILY_API_KEY: ${process.env.TAVILY_API_KEY ? '✅ Configured' : '❌ Missing'}`);
 }
 bootstrap();
