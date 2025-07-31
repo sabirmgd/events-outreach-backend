@@ -14,6 +14,11 @@ import {
   SendGridEvent,
   SendGridEventType,
 } from './dto/sendgrid-webhook.dto';
+import {
+  AimfoxWebhookDto,
+  AimfoxWebhookBatchDto,
+} from './dto/aimfox-webhook.dto';
+import { AimfoxWebhookHelper } from './aimfox.helper';
 
 @Injectable()
 export class NotificationsService {
@@ -22,6 +27,7 @@ export class NotificationsService {
   constructor(
     private readonly aimfoxClient: AimfoxClient,
     private readonly sendGridClient: SendGridClient,
+    private readonly aimfoxWebhookHelper: AimfoxWebhookHelper,
   ) {}
 
   async processSendGridEvents(webhookDto: SendGridWebhookDto): Promise<void> {
@@ -239,5 +245,23 @@ export class NotificationsService {
     } as StartConversationRequest;
 
     return this.aimfoxClient.startConversation(accountId, data);
+  }
+
+  processAimfoxEvents(
+    webhookDto: AimfoxWebhookDto | AimfoxWebhookBatchDto,
+  ): void {
+    this.logger.log('Processing Aimfox webhook events');
+
+    try {
+      this.aimfoxWebhookHelper.processWebhookEvents(webhookDto);
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error(
+        `Failed to process Aimfox webhook events: ${errorMessage}`,
+        error,
+      );
+      throw error;
+    }
   }
 }

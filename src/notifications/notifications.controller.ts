@@ -14,6 +14,11 @@ import { NotificationsService } from './notifications.service';
 import { SendEmailDto } from './dto/send-email.dto';
 import { SendGridWebhookGuard } from './guards/sendgrid-webhook.guard';
 import { SendGridWebhookDto } from './dto/sendgrid-webhook.dto';
+import { AimfoxWebhookGuard } from './guards/aimfox-webhook.guard';
+import {
+  AimfoxWebhookDto,
+  AimfoxWebhookBatchDto,
+} from './dto/aimfox-webhook.dto';
 
 @Controller('notifications')
 export class NotificationsController {
@@ -32,6 +37,27 @@ export class NotificationsController {
           // Log error but don't throw - we've already responded to SendGrid
           console.error('Error processing SendGrid webhook:', error);
         });
+    });
+
+    // Return immediately with 204 No Content
+    return;
+  }
+
+  @Post('aimfox/webhook')
+  @UseGuards(AimfoxWebhookGuard)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  handleAimfoxWebhook(
+    @Body() webhookDto: AimfoxWebhookDto | AimfoxWebhookBatchDto,
+  ) {
+    // Aimfox expects a quick 2xx response to avoid retries
+    // Process events asynchronously to ensure fast response
+    setImmediate(() => {
+      try {
+        this.notificationsService.processAimfoxEvents(webhookDto);
+      } catch (error) {
+        // Log error but don't throw - we've already responded to Aimfox
+        console.error('Error processing Aimfox webhook:', error);
+      }
     });
 
     // Return immediately with 204 No Content
