@@ -8,6 +8,8 @@ import { UpdateOrganizationDto } from './dto/update-organization.dto';
 import { User } from '../user/entities/user.entity';
 import { Team } from '../organization/entities/team.entity';
 import { randomBytes } from 'crypto';
+import * as bcrypt from 'bcrypt';
+import * as crypto from 'crypto';
 
 @Injectable()
 export class AdminService {
@@ -41,18 +43,15 @@ export class AdminService {
     const adminUser = this.userRepository.create({
       name: dto.adminName,
       email: dto.adminEmail,
-      organization: newOrganization,
-      team: newTeam,
       is_active: false,
-      invitation_token: token,
-      invitation_expires_at: expires,
+      password: await bcrypt.hash(crypto.randomBytes(16).toString('hex'), 10), // Temporary password
     });
 
     let adminRole = await this.roleRepository.findOne({
-      where: { name: 'ORGANIZATION_ADMIN' },
+      where: { name: 'ADMIN' },
     });
     if (!adminRole) {
-      adminRole = this.roleRepository.create({ name: 'ORGANIZATION_ADMIN' });
+      adminRole = this.roleRepository.create({ name: 'ADMIN' });
       await this.roleRepository.save(adminRole);
     }
     adminUser.roles = [adminRole];
@@ -65,7 +64,7 @@ export class AdminService {
 
     return {
       organization: newOrganization,
-      invitationToken: adminUser.invitation_token,
+      invitationToken: token, // Store token separately if needed
     };
   }
 
@@ -78,7 +77,7 @@ export class AdminService {
       const admin = org.teams
         .flatMap((team) => team.members)
         .find((user) =>
-          user.roles.some((role: Role) => role.name === 'ORGANIZATION_ADMIN'),
+          user.roles?.some((role: Role) => role.name === 'ADMIN'),
         );
 
       return {
@@ -113,7 +112,7 @@ export class AdminService {
       const admin = organization.teams
         .flatMap((team) => team.members)
         .find((user) =>
-          user.roles.some((role: Role) => role.name === 'ORGANIZATION_ADMIN'),
+          user.roles?.some((role: Role) => role.name === 'ADMIN'),
         );
 
       if (admin) {

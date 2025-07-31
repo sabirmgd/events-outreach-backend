@@ -3,7 +3,7 @@ import { OrganizationService } from './organization.service';
 import { CreateOrganizationDto } from './dto/create-organization.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CaslGuard } from '../auth/guards/casl.guard';
-import { RequiredPermissions } from '../auth/decorators/permissions.decorator';
+import { RequirePermissions } from '../auth/decorators/permissions.decorator';
 import { Action } from '../auth/enums/action.enum';
 import { Organization } from './entities/organization.entity';
 
@@ -13,7 +13,7 @@ export class OrganizationController {
 
   @Post()
   @UseGuards(JwtAuthGuard, CaslGuard)
-  @RequiredPermissions({ action: Action.Create, subject: Organization })
+  @RequirePermissions({ action: Action.Create, subject: Organization })
   async create(
     @Body() createOrganizationDto: CreateOrganizationDto,
     @Request() req: any,

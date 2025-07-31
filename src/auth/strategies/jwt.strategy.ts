@@ -15,13 +15,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   validate(payload: JwtPayload) {
-    // Return user object with role and other necessary fields for permissions
-    return { 
-      userId: payload.sub, 
-      username: payload.username,
-      email: payload.email,
-      role: payload.role,
-      permissions: payload.permissions // for custom permissions if any
-    };
+    // Return the payload as-is since it contains all necessary fields
+    return payload;
   }
 }

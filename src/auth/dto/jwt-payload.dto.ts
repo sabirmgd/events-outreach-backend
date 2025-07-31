@@ -1,9 +1,9 @@
 export class JwtPayload {
   sub: number;
-  username?: string;
-  email?: string;
-  role?: string;
-  permissions?: string[];
+  email: string;
+  roles: string[];
+  organizationId: string | null;
+  teamId: string | null;
   iat?: number;
   exp?: number;
 }

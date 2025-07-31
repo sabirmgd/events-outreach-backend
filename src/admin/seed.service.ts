@@ -217,12 +217,10 @@ export class SeedService implements OnModuleInit {
       user = this.userRepository.create({
         name: adminData.name,
         email: adminData.email,
-        password_hash: hashedPassword,
-        organization,
-        team,
-        roles: [role],
+        password: hashedPassword,
         is_active: true,
       });
+      user.roles = [role];
       await this.userRepository.save(user);
     }
     return user;
@@ -403,11 +401,11 @@ export class SeedService implements OnModuleInit {
         const hashedPassword = await bcrypt.hash(superAdminPassword, 10);
         superAdmin = this.userRepository.create({
           email: superAdminEmail,
-          password_hash: hashedPassword,
+          password: hashedPassword,
           name: 'Super Admin',
-          roles: [superAdminRole],
           is_active: true,
         });
+        superAdmin.roles = [superAdminRole];
         await this.userRepository.save(superAdmin);
         this.logger.log(`Created SUPER_ADMIN user: ${superAdminEmail}`);
       }

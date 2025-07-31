@@ -25,7 +25,8 @@ export class AuthService {
     
     const user = await this.userRepository.findOne({ 
       where: { email },
-      select: ['id', 'email', 'password', 'name', 'role']
+      select: ['id', 'email', 'password', 'name'],
+      relations: ['roles', 'organization', 'team']
     });
 
     if (!user || !await bcrypt.compare(password, user.password)) {
@@ -33,14 +34,17 @@ export class AuthService {
     }
 
     // Only allow admin users to login to admin-ui
-    if (user.role !== Role.ADMIN) {
+    const hasAdminRole = user.roles?.some(role => role.name === 'ADMIN');
+    if (!hasAdminRole) {
       throw new UnauthorizedException('Access denied. Admin role required.');
     }
 
     const payload = { 
       sub: user.id, 
       email: user.email,
-      role: user.role 
+      roles: user.roles?.map(role => role.name) || [],
+      organizationId: user.organization?.id || null,
+      teamId: user.team?.id || null
     };
 
     const tokens = await this.generateTokens(payload);
@@ -74,7 +78,8 @@ export class AuthService {
 
       const user = await this.userRepository.findOne({
         where: { id: payload.sub },
-        select: ['id', 'email', 'role', 'refreshToken']
+        select: ['id', 'email', 'refreshToken'],
+        relations: ['roles', 'organization', 'team']
       });
 
       if (!user || !user.refreshToken) {
@@ -93,7 +98,9 @@ export class AuthService {
       const newPayload = { 
         sub: user.id, 
         email: user.email,
-        role: user.role 
+        roles: user.roles?.map(role => role.name) || [],
+        organizationId: user.organization?.id || null,
+        teamId: user.team?.id || null
       };
 
       const tokens = await this.generateTokens(newPayload);

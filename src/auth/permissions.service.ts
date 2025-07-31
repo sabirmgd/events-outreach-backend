@@ -22,7 +22,7 @@ export class PermissionsService {
       case Subject.Organization.toString():
         return this.organizationRepository.findOne({ where: { id } });
       case Subject.User.toString():
-        return this.userRepository.findOne({ where: { id } });
+        return this.userRepository.findOne({ where: { id: parseInt(id, 10) } });
       case Subject.Event.toString():
         return this.eventRepository.findOne({ where: { id: Number(id) } });
       default:

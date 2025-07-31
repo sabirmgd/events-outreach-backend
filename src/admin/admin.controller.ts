@@ -12,7 +12,7 @@ import { AdminService } from './admin.service';
 import { CreateOrganizationWithAdminDto } from './dto/create-organization-with-admin.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CaslGuard } from '../auth/guards/casl.guard';
-import { RequiredPermissions } from '../auth/decorators/permissions.decorator';
+import { RequirePermissions } from '../auth/decorators/permissions.decorator';
 import { Action } from '../auth/enums/action.enum';
 import { Organization } from '../organization/entities/organization.entity';
 import { UpdateOrganizationDto } from './dto/update-organization.dto';
@@ -23,19 +23,19 @@ export class AdminController {
   constructor(private readonly adminService: AdminService) {}
 
   @Post('organizations')
-  @RequiredPermissions({ action: Action.Create, subject: Organization })
+  @RequirePermissions({ action: Action.Create, subject: Organization })
   createOrganizationWithAdmin(@Body() dto: CreateOrganizationWithAdminDto) {
     return this.adminService.createOrganizationWithAdmin(dto);
   }
 
   @Get('organizations')
-  @RequiredPermissions({ action: Action.Read, subject: Organization })
+  @RequirePermissions({ action: Action.Read, subject: Organization })
   findAllOrganizations() {
     return this.adminService.findAllOrganizationsWithAdmins();
   }
 
   @Patch('organizations/:id')
-  @RequiredPermissions({ action: Action.Update, subject: Organization })
+  @RequirePermissions({ action: Action.Update, subject: Organization })
   updateOrganization(
     @Param('id') id: string,
     @Body() dto: UpdateOrganizationDto,
@@ -44,7 +44,7 @@ export class AdminController {
   }
 
   @Delete('organizations/:id')
-  @RequiredPermissions({ action: Action.Delete, subject: Organization })
+  @RequirePermissions({ action: Action.Delete, subject: Organization })
   deleteOrganization(@Param('id') id: string) {
     return this.adminService.deleteOrganization(id);
   }
