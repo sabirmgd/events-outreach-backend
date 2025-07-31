@@ -3,12 +3,16 @@ import {
   CreateDateColumn,
   Entity,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { Event } from '../../event/entities/event.entity';
+import { Conversation } from './conversation.entity';
+import { Organization } from '../../organization/entities/organization.entity';
+import { OutreachStepTemplate } from './outreach-step-template.entity';
 
-@Entity()
+@Entity('outreach_sequences')
 export class OutreachSequence {
   @PrimaryGeneratedColumn()
   id: number;
@@ -22,11 +26,23 @@ export class OutreachSequence {
   @ManyToOne(() => Event, { nullable: true })
   event: Event;
 
-  @Column('jsonb', { nullable: true })
-  company_filter_json: object;
+  @ManyToOne(() => Organization, { nullable: true })
+  organization: Organization;
 
-  @Column('jsonb', { nullable: true })
-  persona_filter_json: object;
+  @OneToMany(() => Conversation, (conversation) => conversation.sequence)
+  conversations: Conversation[];
+
+  @OneToMany(() => OutreachStepTemplate, (step) => step.sequence)
+  steps: OutreachStepTemplate[];
+
+  @Column({ type: 'text', nullable: true })
+  discovery_prompt: string;
+
+  @Column({ type: 'text', nullable: true })
+  outreach_context: string;
+
+  @Column({ type: 'jsonb', nullable: true })
+  template_variables: Record<string, string>;
 
   @Column({ default: 'active' })
   status: string;

@@ -31,6 +31,45 @@
 $ npm install
 ```
 
+## Environment Variables
+
+Create a `.env` file in the backend directory with the following variables:
+
+```env
+# Database Configuration
+DATABASE_URL=postgresql://user:password@localhost:5432/events_outreach_db
+
+# Application Configuration
+NODE_ENV=development
+PORT=3000
+
+# JWT Configuration
+JWT_SECRET=your-jwt-secret-here
+JWT_EXPIRATION=7d
+
+# External API Keys
+AIMFOX_API_KEY=your-aimfox-api-key
+SENDGRID_API_KEY=your-sendgrid-api-key
+SENDER_EMAIL=your-sender-email@example.com
+
+# Webhook Secrets
+AIMFOX_WEBHOOK_SECRET=your-aimfox-webhook-secret
+SENDGRID_WEBHOOK_SECRET=your-sendgrid-webhook-secret
+
+# Other API Keys (if needed)
+GOOGLE_API_KEY=your-google-api-key
+OPENAI_API_KEY=your-openai-api-key
+PERPLEXITY_API_KEY=your-perplexity-api-key
+
+# Redis Configuration (if using Bull/BullMQ)
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_PASSWORD=
+
+# Frontend URL (for CORS)
+FRONTEND_URL=http://localhost:5173
+```
+
 ## Compile and run the project
 
 ```bash
@@ -96,4 +135,5 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 ## License
 
 Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+
 # events-outreach-backend

@@ -19,13 +19,17 @@ export class CreateOutreachSequenceDto {
   @IsOptional()
   event_id?: number;
 
-  @IsObject()
+  @IsString()
   @IsOptional()
-  company_filter_json?: object;
+  discovery_prompt?: string;
+
+  @IsString()
+  @IsOptional()
+  outreach_context?: string;
 
   @IsObject()
   @IsOptional()
-  persona_filter_json?: object;
+  template_variables?: Record<string, string>;
 
   @IsString()
   @IsOptional()

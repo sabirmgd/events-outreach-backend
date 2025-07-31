@@ -71,7 +71,7 @@ export class EventService {
     // 3. Create the job entity
     const job = await this.jobsService.create(
       {
-        type: JobType.DISCOVER_EVENTS,
+        type: JobType.EVENT_DISCOVERY,
         inputParameters: { cities, topic, dateRange },
       },
       prompt,

@@ -2,11 +2,13 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Conversation } from '../../outreach/entities/conversation.entity';
 
-@Entity()
+@Entity('persons')
 export class Person {
   @PrimaryGeneratedColumn()
   id: number;
@@ -34,6 +36,9 @@ export class Person {
 
   @Column('float', { nullable: true })
   source_confidence: number;
+
+  @OneToMany(() => Conversation, (conversation) => conversation.person)
+  conversations: Conversation[];
 
   @CreateDateColumn()
   created_at: Date;

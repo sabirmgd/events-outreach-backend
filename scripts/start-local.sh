@@ -43,10 +43,17 @@ print_info "Navigating to project directory: $PROJECT_DIR"
 cd "$PROJECT_DIR"
 
 print_info "Starting PostgreSQL container via Docker Compose..."
-docker-compose up -d
+docker-compose up -d postgres redis
 
 print_info "Waiting for PostgreSQL to be ready..."
-# A simple sleep is often enough for local dev. For production, a more robust check is needed.
-sleep 5
+# This is a simple loop; a more robust solution might use pg_isready
+until docker-compose exec -T postgres pg_isready -U "$DB_USER" -d "$DB_NAME" -q; do
+  print_info "PostgreSQL is unavailable - sleeping"
+  sleep 1
+done
+
+print_info "PostgreSQL is up - running database seeder..."
+npm run seed
+
 print_info "Starting NestJS application in development mode..."
 npm run start:dev 

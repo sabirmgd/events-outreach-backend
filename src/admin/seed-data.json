@@ -1,0 +1,104 @@
+{
+  "organizations": [
+    {
+      "name": "Innovate-Now-Summit",
+      "admin": {
+        "name": "Alex Summit-Admin",
+        "email": "alex.summit@example.com",
+        "password": "password123"
+      },
+      "events": [
+        {
+          "name": "Innovate Now 2025 Global",
+          "start_dt": "2025-10-20T09:00:00Z",
+          "end_dt": "2025-10-22T17:00:00Z",
+          "website_url": "https://innovatenow.summit",
+          "city": { "name": "San Francisco", "country_code": "US" },
+          "sponsors": [
+            {
+              "name": "TechSolutions Inc.",
+              "website": "https://techsolutions.inc",
+              "contacts": [
+                {
+                  "name": "Sarah Connor",
+                  "first_name": "Sarah",
+                  "last_name": "Connor",
+                  "title": "CEO",
+                  "email": "s.connor@techsolutions.inc",
+                  "linkedin_url": "https://linkedin.com/in/sarahconnor-ts",
+                  "seniority": "executive",
+                  "location_text": "San Francisco, CA",
+                  "source_confidence": 0.95
+                },
+                {
+                  "name": "John Reese",
+                  "first_name": "John",
+                  "last_name": "Reese",
+                  "title": "VP of Marketing",
+                  "email": "j.reese@techsolutions.inc",
+                  "linkedin_url": "https://linkedin.com/in/johnreese-ts",
+                  "seniority": "vp",
+                  "location_text": "San Francisco, CA",
+                  "source_confidence": 0.92
+                }
+              ]
+            },
+            {
+              "name": "DataDriven Corp.",
+              "website": "https://datadriven.corp",
+              "contacts": [
+                {
+                  "name": "Harold Finch",
+                  "first_name": "Harold",
+                  "last_name": "Finch",
+                  "title": "Chief Data Scientist",
+                  "email": "h.finch@datadriven.corp",
+                  "linkedin_url": "https://linkedin.com/in/haroldfinch-ddc",
+                  "seniority": "executive",
+                  "location_text": "New York, NY",
+                  "source_confidence": 0.98
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "AI-Driven-Future-Conf",
+      "admin": {
+        "name": "Casey Future-Admin",
+        "email": "casey.future@example.com",
+        "password": "password123"
+      },
+      "events": [
+        {
+          "name": "AI-Driven Future Conference 2025",
+          "start_dt": "2025-11-15T09:00:00Z",
+          "end_dt": "2025-11-17T17:00:00Z",
+          "website_url": "https://aifuture.conf",
+          "city": { "name": "New York", "country_code": "US" },
+          "sponsors": [
+            {
+              "name": "Cyberdyne Systems",
+              "website": "https://cyberdyne.io",
+              "contacts": [
+                {
+                  "name": "Miles Dyson",
+                  "first_name": "Miles",
+                  "last_name": "Dyson",
+                  "title": "Head of R&D",
+                  "email": "m.dyson@cyberdyne.io",
+                  "linkedin_url": "https://linkedin.com/in/milesdyson-cs",
+                  "seniority": "director",
+                  "location_text": "Los Angeles, CA",
+                  "source_confidence": 0.91
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
