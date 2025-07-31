@@ -57,7 +57,7 @@ export class Event {
   @OneToMany(() => EventSponsor, (sponsor) => sponsor.event, { cascade: true })
   sponsors: EventSponsor[];
 
-  @ManyToOne(() => Organization, (organization) => organization.events, {
+  @ManyToOne(() => Organization, {
     nullable: true,
     onDelete: 'CASCADE',
   })

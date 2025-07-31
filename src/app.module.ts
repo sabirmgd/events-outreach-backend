@@ -22,6 +22,8 @@ import { ClientsModule } from './clients/clients.module';
 import { PromptsModule } from './prompts/prompts.module';
 import { AgentModule } from './agent/agent.module';
 import { AgentsModule } from './agent/agents.module';
+import { OrganizationModule } from './organization/organization.module';
+import { AdminModule } from './admin/admin.module';
 
 @Module({
   imports: [
@@ -47,6 +49,8 @@ import { AgentsModule } from './agent/agents.module';
       inject: [ConfigService],
     }),
     AuthModule,
+    OrganizationModule,
+    AdminModule,
     GeographyModule,
     TagModule,
     CompanyModule,
