@@ -17,6 +17,6 @@ import { AuthModule } from '@/auth/auth.module';
     TestPromptService,
     AgentExecutionGateway,
   ],
-  exports: [AgentRegistryService, AgentExecutionService, TestPromptService],
+  exports: [AgentRegistryService, AgentExecutionService, TestPromptService, AgentExecutionGateway],
 })
 export class AgentModule {}

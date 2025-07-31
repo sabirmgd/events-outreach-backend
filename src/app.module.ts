@@ -22,6 +22,7 @@ import { ClientsModule } from './clients/clients.module';
 import { PromptsModule } from './prompts/prompts.module';
 import { AgentModule } from './agent/agent.module';
 import { AgentsModule } from './agent/agents.module';
+import { SignalModule } from './signal/signal.module';
 
 @Module({
   imports: [
@@ -62,6 +63,7 @@ import { AgentsModule } from './agent/agents.module';
     PromptsModule,
     AgentModule,
     AgentsModule,
+    SignalModule,
   ],
   controllers: [AppController],
   providers: [AppService],

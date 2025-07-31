@@ -6,6 +6,8 @@ import { ChatPromptTemplate } from '@langchain/core/prompts';
 import { TavilySearchTool } from '../tools/tavily-search.tool';
 import { PromptsService } from '../../prompts/services/prompts.service';
 import { Agent, AgentMethod } from '../decorators';
+import { b } from '../baml_client/baml_client';
+import { EventWithDetails } from '../baml_client/baml_client/types';
 
 @Agent({
   id: 'event-discovery',
@@ -141,64 +143,136 @@ Search for ${topic} events in ${searchLocation} for the year ${year}.
 
 Perform multiple searches to find:
 1. Major ${topic} conferences, summits, and expos
-2. Their official websites
+2. Their official websites  
 3. Lists of sponsors and exhibitors
 4. Speaker lineups
 
-Extract structured data for each event found.`;
+Extract comprehensive information about each event found.`;
 
     if (context?.updateProgress) {
-      context.updateProgress(30, 'Executing search with LangChain agent');
+      context.updateProgress(30, 'Searching with LangChain tools');
     }
     
-    let result;
-    let retries = 3;
-    
-    while (retries > 0) {
+    try {
       // Check for cancellation
       if (context?.signal?.aborted) {
         throw new Error('Execution cancelled');
       }
       
-      try {
-        result = await this.agent.invoke({ input: searchInstruction });
-        break;
-      } catch (error) {
-        if (error.error?.error?.type === 'overloaded_error' && retries > 1) {
-          this.logger.warn(`API overloaded, retrying... (${retries - 1} retries left)`);
-          await new Promise(resolve => setTimeout(resolve, 2000));
-          retries--;
-        } else {
-          throw error;
-        }
+      // Step 1: Use LangChain agent to search for events
+      const result = await this.agent.invoke({ input: searchInstruction });
+      
+      if (context?.updateProgress) {
+        context.updateProgress(60, 'Extracting structured data with BAML');
       }
-    }
 
-    if (context?.updateProgress) {
-      context.updateProgress(70, 'Parsing and structuring results');
+      // Step 2: Extract text from LangChain result
+      let searchText = '';
+      if (typeof result.output === 'string') {
+        searchText = result.output;
+      } else if (Array.isArray(result.output)) {
+        searchText = result.output.map((item: any) => {
+          if (typeof item === 'string') return item;
+          if (item?.text) return item.text;
+          if (item?.content) return item.content;
+          return JSON.stringify(item);
+        }).join('\n');
+      } else if (result.output?.text) {
+        searchText = result.output.text;
+      } else if (result.output?.content) {
+        searchText = result.output.content;
+      } else {
+        searchText = JSON.stringify(result.output);
+      }
+
+      this.logger.log(`Search results length: ${searchText.length} characters`);
+
+      // Step 3: Use BAML to extract structured event data from search results
+      const eventsWithDetails: EventWithDetails[] = await b.ExtractEvents(searchText);
+      
+      if (context?.updateProgress) {
+        context.updateProgress(90, 'Processing results');
+      }
+
+      this.logger.log(`Successfully extracted ${eventsWithDetails.length} events with details`);
+      
+      // Convert BAML EventWithDetails to simple event format for compatibility
+      const events = eventsWithDetails.map(eventWithDetails => ({
+        name: eventWithDetails.event.name,
+        date: eventWithDetails.event.dates || `${year}`,
+        location: `${eventWithDetails.event.city}, ${eventWithDetails.event.country || location}`,
+        venue: eventWithDetails.event.venue,
+        website: eventWithDetails.event.website,
+        attendees: eventWithDetails.event.attendeeCount,
+        industry: eventWithDetails.event.industry,
+        description: eventWithDetails.event.description,
+        organizer: eventWithDetails.event.organizer,
+        type: eventWithDetails.event.type || 'conference',
+        sponsors: eventWithDetails.sponsors?.map(s => s.company.name) || [],
+        speakers: eventWithDetails.speakers?.map(s => s.name) || []
+      }));
+
+      return events;
+    } catch (error) {
+      this.logger.error(`Error in hybrid event search: ${error.message}`);
+      // Return empty array instead of throwing to prevent execution failure
+      return [];
     }
-    
-    return this.parseAgentOutput(result?.output || '[]');
   }
 
   private parseAgentOutput(output: any): any[] {
     try {
       let outputText = output;
-      if (typeof output === 'object' && output.text) {
-        outputText = output.text;
+      
+      // Handle different output formats
+      if (typeof output === 'object' && output !== null) {
+        if (output.text) {
+          outputText = output.text;
+        } else if (output.output) {
+          outputText = output.output;
+        } else {
+          outputText = JSON.stringify(output);
+        }
       }
       
+      // Ensure outputText is a string
+      if (typeof outputText !== 'string') {
+        outputText = JSON.stringify(outputText);
+      }
+      
+      // Try to extract JSON structure
       const jsonMatch = outputText.match(/\{[\s\S]*"reasoning"[\s\S]*"events"[\s\S]*\}/);
-      if (!jsonMatch) {
-        throw new Error('No JSON structure found in output');
+      if (jsonMatch) {
+        const parsed = JSON.parse(jsonMatch[0]);
+        this.logger.log('Chain of thought reasoning:', parsed.reasoning);
+        return parsed.events || [];
       }
       
-      const parsed = JSON.parse(jsonMatch[0]);
-      this.logger.log('Chain of thought reasoning:', parsed.reasoning);
+      // Try direct JSON parse if no match found
+      try {
+        const parsed = JSON.parse(outputText);
+        if (parsed.events) {
+          this.logger.log('Direct parse - reasoning:', parsed.reasoning);
+          return parsed.events;
+        }
+      } catch (e) {
+        // Not valid JSON, continue
+      }
       
-      return parsed.events || [];
+      // Fallback: look for array pattern
+      const arrayMatch = outputText.match(/\[[\s\S]*\]/);
+      if (arrayMatch) {
+        try {
+          return JSON.parse(arrayMatch[0]);
+        } catch (e) {
+          // Not valid array
+        }
+      }
+      
+      throw new Error('No valid event data found in output');
     } catch (error) {
       this.logger.error('Failed to parse agent output:', error);
+      this.logger.error('Raw output:', output);
       return [];
     }
   }

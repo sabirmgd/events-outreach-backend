@@ -131,7 +131,20 @@ export class AgentRegistryService implements OnModuleInit {
     }
 
     try {
-      return await method(params, context);
+      // Get the method definition to extract parameter order
+      const methodDef = agent.definition.methods.find(m => m.name === methodName);
+      if (!methodDef) {
+        throw new Error(`Method definition not found for ${methodName}`);
+      }
+
+      // Extract parameters in the correct order
+      const args = methodDef.parameters.map(param => params[param.name]);
+      
+      // Add context as the last parameter
+      args.push(context);
+      
+      // Call the method with spread parameters
+      return await method.apply(null, args);
     } catch (error) {
       this.logger.error(
         `Error executing ${agentId}.${methodName}: ${error.message}`,

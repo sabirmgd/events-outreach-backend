@@ -180,3 +180,39 @@ public/
 # Local development
 local/
 *.local
+
+# Claude AI
+.claude/
+*.claude
+claude-artifacts/
+.claude-cache/
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.backup
+*.old
+*.orig
+*.save
+*.swp
+*.swo
+*~
+.#*
+\#*#
+
+# Temporary test scripts
+test-*.js
+test-*.ts
+temp-*.js
+temp-*.ts
+tmp-*.js
+tmp-*.ts
+scratch*.js
+scratch*.ts
+*-test.tmp.js
+*-test.tmp.ts
+playground*.js
+playground*.ts
+experiment*.js
+experiment*.ts

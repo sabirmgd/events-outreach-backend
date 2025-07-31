@@ -116,4 +116,24 @@ export class PersonaService {
 
     return this.companyPersonRoleRepository.save(role);
   }
+
+  async findByLinkedIn(linkedinUrl: string): Promise<Person | null> {
+    if (!linkedinUrl) return null;
+    return await this.personRepository.findOne({
+      where: { linkedin_url: linkedinUrl },
+    });
+  }
+
+  async findByEmail(email: string): Promise<Person | null> {
+    if (!email) return null;
+    // Assuming email is stored in contact_channels table
+    const channel = await this.contactChannelRepository.findOne({
+      where: { 
+        type: 'email',
+        value: email,
+      },
+      relations: ['person'],
+    });
+    return channel?.person || null;
+  }
 }

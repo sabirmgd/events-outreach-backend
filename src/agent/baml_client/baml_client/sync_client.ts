@@ -89,6 +89,174 @@ export class BamlSyncClient {
   }
 
   
+  EnrichCompany(
+      companyResearchResults: string,
+      __baml_options__?: BamlCallOptions
+  ): types.Company {
+    try {
+      const options = { ...this.bamlOptions, ...(__baml_options__ || {}) }
+      const collector = options.collector ? (Array.isArray(options.collector) ? options.collector : [options.collector]) : [];
+      const rawEnv = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
+      const env: Record<string, string> = Object.fromEntries(
+        Object.entries(rawEnv).filter(([_, value]) => value !== undefined) as [string, string][]
+      );
+      const raw = this.runtime.callFunctionSync(
+        "EnrichCompany",
+        {
+          "companyResearchResults": companyResearchResults
+        },
+        this.ctxManager.cloneContext(),
+        options.tb?.__tb(),
+        options.clientRegistry,
+        collector,
+        env,
+      )
+      return raw.parsed(false) as types.Company
+    } catch (error: any) {
+      throw toBamlError(error);
+    }
+  }
+  
+  EnrichPerson(
+      personResearchResults: string,
+      __baml_options__?: BamlCallOptions
+  ): types.Person {
+    try {
+      const options = { ...this.bamlOptions, ...(__baml_options__ || {}) }
+      const collector = options.collector ? (Array.isArray(options.collector) ? options.collector : [options.collector]) : [];
+      const rawEnv = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
+      const env: Record<string, string> = Object.fromEntries(
+        Object.entries(rawEnv).filter(([_, value]) => value !== undefined) as [string, string][]
+      );
+      const raw = this.runtime.callFunctionSync(
+        "EnrichPerson",
+        {
+          "personResearchResults": personResearchResults
+        },
+        this.ctxManager.cloneContext(),
+        options.tb?.__tb(),
+        options.clientRegistry,
+        collector,
+        env,
+      )
+      return raw.parsed(false) as types.Person
+    } catch (error: any) {
+      throw toBamlError(error);
+    }
+  }
+  
+  ExtractEvents(
+      searchResults: string,
+      __baml_options__?: BamlCallOptions
+  ): types.EventWithDetails[] {
+    try {
+      const options = { ...this.bamlOptions, ...(__baml_options__ || {}) }
+      const collector = options.collector ? (Array.isArray(options.collector) ? options.collector : [options.collector]) : [];
+      const rawEnv = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
+      const env: Record<string, string> = Object.fromEntries(
+        Object.entries(rawEnv).filter(([_, value]) => value !== undefined) as [string, string][]
+      );
+      const raw = this.runtime.callFunctionSync(
+        "ExtractEvents",
+        {
+          "searchResults": searchResults
+        },
+        this.ctxManager.cloneContext(),
+        options.tb?.__tb(),
+        options.clientRegistry,
+        collector,
+        env,
+      )
+      return raw.parsed(false) as types.EventWithDetails[]
+    } catch (error: any) {
+      throw toBamlError(error);
+    }
+  }
+  
+  ExtractSponsors(
+      searchResults: string,
+      __baml_options__?: BamlCallOptions
+  ): types.Company[] {
+    try {
+      const options = { ...this.bamlOptions, ...(__baml_options__ || {}) }
+      const collector = options.collector ? (Array.isArray(options.collector) ? options.collector : [options.collector]) : [];
+      const rawEnv = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
+      const env: Record<string, string> = Object.fromEntries(
+        Object.entries(rawEnv).filter(([_, value]) => value !== undefined) as [string, string][]
+      );
+      const raw = this.runtime.callFunctionSync(
+        "ExtractSponsors",
+        {
+          "searchResults": searchResults
+        },
+        this.ctxManager.cloneContext(),
+        options.tb?.__tb(),
+        options.clientRegistry,
+        collector,
+        env,
+      )
+      return raw.parsed(false) as types.Company[]
+    } catch (error: any) {
+      throw toBamlError(error);
+    }
+  }
+  
+  FindCompanyPOCs(
+      searchResults: string,
+      __baml_options__?: BamlCallOptions
+  ): types.Person[] {
+    try {
+      const options = { ...this.bamlOptions, ...(__baml_options__ || {}) }
+      const collector = options.collector ? (Array.isArray(options.collector) ? options.collector : [options.collector]) : [];
+      const rawEnv = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
+      const env: Record<string, string> = Object.fromEntries(
+        Object.entries(rawEnv).filter(([_, value]) => value !== undefined) as [string, string][]
+      );
+      const raw = this.runtime.callFunctionSync(
+        "FindCompanyPOCs",
+        {
+          "searchResults": searchResults
+        },
+        this.ctxManager.cloneContext(),
+        options.tb?.__tb(),
+        options.clientRegistry,
+        collector,
+        env,
+      )
+      return raw.parsed(false) as types.Person[]
+    } catch (error: any) {
+      throw toBamlError(error);
+    }
+  }
+  
+  FindCompanyPOCsByRoles(
+      searchResults: string,targetRoles: string[],
+      __baml_options__?: BamlCallOptions
+  ): types.Person[] {
+    try {
+      const options = { ...this.bamlOptions, ...(__baml_options__ || {}) }
+      const collector = options.collector ? (Array.isArray(options.collector) ? options.collector : [options.collector]) : [];
+      const rawEnv = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
+      const env: Record<string, string> = Object.fromEntries(
+        Object.entries(rawEnv).filter(([_, value]) => value !== undefined) as [string, string][]
+      );
+      const raw = this.runtime.callFunctionSync(
+        "FindCompanyPOCsByRoles",
+        {
+          "searchResults": searchResults,"targetRoles": targetRoles
+        },
+        this.ctxManager.cloneContext(),
+        options.tb?.__tb(),
+        options.clientRegistry,
+        collector,
+        env,
+      )
+      return raw.parsed(false) as types.Person[]
+    } catch (error: any) {
+      throw toBamlError(error);
+    }
+  }
+  
   ResearchEvents(
       location: string,year: number,topic: string,
       __baml_options__?: BamlCallOptions
@@ -112,6 +280,34 @@ export class BamlSyncClient {
         env,
       )
       return raw.parsed(false) as types.EventWithDetails[]
+    } catch (error: any) {
+      throw toBamlError(error);
+    }
+  }
+  
+  SimpleTest(
+      input: string,
+      __baml_options__?: BamlCallOptions
+  ): string {
+    try {
+      const options = { ...this.bamlOptions, ...(__baml_options__ || {}) }
+      const collector = options.collector ? (Array.isArray(options.collector) ? options.collector : [options.collector]) : [];
+      const rawEnv = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
+      const env: Record<string, string> = Object.fromEntries(
+        Object.entries(rawEnv).filter(([_, value]) => value !== undefined) as [string, string][]
+      );
+      const raw = this.runtime.callFunctionSync(
+        "SimpleTest",
+        {
+          "input": input
+        },
+        this.ctxManager.cloneContext(),
+        options.tb?.__tb(),
+        options.clientRegistry,
+        collector,
+        env,
+      )
+      return raw.parsed(false) as string
     } catch (error: any) {
       throw toBamlError(error);
     }
