@@ -1,139 +1,267 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Events Outreach Backend
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+A B2B outreach automation platform built with NestJS, featuring event discovery, sponsor extraction, and automated outreach capabilities.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Overview
 
-## Description
+This platform follows the workflow: **Event → Sponsor → Company → Persona → Outreach → Meeting**
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+### Key Features
 
-## Project setup
+- **Event Discovery**: Automated event discovery and management
+- **Company Enrichment**: Company data enrichment with vector similarity search using pgvector
+- **Multi-channel Outreach**: Email and LinkedIn automation
+- **Meeting Scheduling**: Cal.com integration for automated scheduling
+- **Agent Framework**: Decorator-based agents with real-time execution tracking
+- **CASL Authentication**: Fine-grained permission control with role-based access
+
+## Prerequisites
+
+- Node.js (v18 or higher)
+- PostgreSQL (with pgvector extension)
+- Redis
+- Docker (optional, for running services via docker-compose)
+
+## Quick Start
+
+### 1. Clone the repository
 
 ```bash
-$ npm install
+git clone <repository-url>
+cd events-outreach-backend
 ```
 
-## Environment Variables
+### 2. Install dependencies
 
-Create a `.env` file in the backend directory with the following variables:
+```bash
+npm install
+```
+
+### 3. Set up environment variables
+
+Create a `.env` file in the root directory:
 
 ```env
 # Database Configuration
-DATABASE_URL=postgresql://user:password@localhost:5432/events_outreach_db
+DB_HOST=localhost
+DB_PORT=5432
+DB_USER=your_db_user
+DB_PASS=your_db_password
+DB_NAME=events_outreach_db
 
-# Application Configuration
-NODE_ENV=development
-PORT=3000
-
-# JWT Configuration
-JWT_SECRET=your-jwt-secret-here
-JWT_EXPIRATION=7d
-
-# External API Keys
-AIMFOX_API_KEY=your-aimfox-api-key
-SENDGRID_API_KEY=your-sendgrid-api-key
-SENDER_EMAIL=your-sender-email@example.com
-
-# Webhook Secrets
-AIMFOX_WEBHOOK_SECRET=your-aimfox-webhook-secret
-SENDGRID_WEBHOOK_SECRET=your-sendgrid-webhook-secret
-
-# Other API Keys (if needed)
-GOOGLE_API_KEY=your-google-api-key
-OPENAI_API_KEY=your-openai-api-key
-PERPLEXITY_API_KEY=your-perplexity-api-key
-
-# Redis Configuration (if using Bull/BullMQ)
+# Redis Configuration
 REDIS_HOST=localhost
 REDIS_PORT=6379
-REDIS_PASSWORD=
 
-# Frontend URL (for CORS)
-FRONTEND_URL=http://localhost:5173
+# Application
+PORT=3000
+NODE_ENV=dev
+
+# JWT Configuration
+JWT_SECRET=your_jwt_secret_here
+JWT_REFRESH_SECRET=your_jwt_refresh_secret_here
+JWT_EXPIRES_IN=15m
+
+# API Keys
+PERPLEXITY_API_KEY=your_perplexity_api_key
+TAVILY_API_KEY=your_tavily_api_key
+ANTHROPIC_API_KEY=your_anthropic_api_key
+
+# CORS Configuration (comma-separated list of allowed origins)
+CORS_ALLOWED_ORIGINS=http://localhost:3000,http://localhost:8080,http://192.168.29.165:8080
+
+# Optional: Run database seeds on startup
+RUN_SEEDS=false
 ```
 
-## Compile and run the project
+### 4. Start required services
+
+Using Docker:
+```bash
+docker-compose up -d
+```
+
+Or manually start PostgreSQL and Redis.
+
+### 5. Create the database
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+createdb events_outreach_db
 ```
 
-## Run tests
+### 6. Run database migrations
 
 ```bash
-# unit tests
-$ npm run test
+# Reset database (WARNING: This will delete all data)
+psql -h localhost -p 5432 -U your_user -d events_outreach_db -f scripts/reset-database.sql
 
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+# Run all migrations
+npm run migration:run
 ```
 
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+### 7. Start the application
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+# Development mode with watch
+npm run start:dev
+
+# Production mode
+npm run build
+npm run start:prod
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+## Default Users
 
-## Resources
+After running migrations, the following users are available:
 
-Check out a few resources that may come in handy when working with NestJS:
+- **Admin**: `admin@lumify.ai` / `admin123!` (ADMIN role)
+- **User**: `user@lumify.ai` / `user123!` (USER role)
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+## CORS Configuration
 
-## Support
+The application supports dynamic CORS configuration through environment variables:
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+### Environment Variable
+Set `CORS_ALLOWED_ORIGINS` in your `.env` file with comma-separated allowed origins:
+```env
+CORS_ALLOWED_ORIGINS=http://localhost:3000,http://localhost:8080,http://192.168.29.165:8080
+```
 
-## Stay in touch
+### Development Mode
+In development mode (`NODE_ENV=dev`), CORS allows all origins for easier testing.
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+### Production Mode
+In production, only origins listed in `CORS_ALLOWED_ORIGINS` are allowed.
+
+### CORS Settings
+- **Methods**: `GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS`
+- **Credentials**: Enabled (cookies and authorization headers supported)
+- **Preflight**: Handled automatically
+
+## Database Management
+
+### Migration Commands
+
+```bash
+# Generate a new migration based on entity changes
+npm run migration:generate -- -n MigrationName
+
+# Run pending migrations
+npm run migration:run
+
+# Revert the last migration
+npm run migration:revert
+
+# Reset database completely
+npm run db:reset
+```
+
+## API Documentation
+
+The API follows RESTful conventions with JWT authentication.
+
+### Authentication Endpoints
+- `POST /auth/login` - Login with email and password
+- `POST /auth/logout` - Logout (requires auth)
+- `POST /auth/refresh` - Refresh access token
+
+### Protected Endpoints
+All other endpoints require authentication via Bearer token:
+```
+Authorization: Bearer <your-jwt-token>
+```
+
+## Architecture
+
+### Core Modules
+
+- **AuthModule**: JWT authentication with CASL permissions
+- **OrganizationModule**: Multi-tenant organization management
+- **EventModule**: Event discovery and management
+- **CompanyModule**: Company data with vector embeddings
+- **PersonaModule**: Contact management
+- **OutreachModule**: Outreach automation
+- **AgentModule**: AI-powered agents for various tasks
+- **PromptsModule**: Versioned prompt management
+
+### Technology Stack
+
+- **Framework**: NestJS
+- **Database**: PostgreSQL with pgvector extension
+- **ORM**: TypeORM
+- **Queue**: BullMQ with Redis
+- **Authentication**: Passport.js with JWT
+- **Authorization**: CASL
+- **AI/LLM**: LangChain with Anthropic/Perplexity
+- **Real-time**: Socket.io
+
+## Development
+
+### Running Tests
+
+```bash
+# Unit tests
+npm test
+
+# E2E tests
+npm run test:e2e
+
+# Test coverage
+npm run test:cov
+```
+
+### Code Quality
+
+```bash
+# Linting
+npm run lint
+
+# Formatting
+npm run format
+```
+
+### Project Structure
+
+```
+src/
+├── auth/           # Authentication & authorization
+├── admin/          # Admin operations & seeding
+├── agent/          # Agent framework & implementations
+├── company/        # Company management
+├── event/          # Event management
+├── geography/      # Location services
+├── jobs/           # Background job processing
+├── meeting/        # Meeting scheduling
+├── organization/   # Multi-tenant support
+├── outreach/       # Outreach automation
+├── persona/        # Contact management
+├── prompts/        # Prompt management
+├── queue/          # Queue management
+├── tools/          # AI/LLM tools
+└── user/           # User management
+```
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Database connection errors**
+   - Ensure PostgreSQL is running
+   - Check database credentials in `.env`
+   - Verify the database exists
+
+2. **Migration errors**
+   - Reset the database and run migrations again
+   - Check for PostgreSQL extensions: `CREATE EXTENSION IF NOT EXISTS "uuid-ossp";`
+
+3. **CORS errors**
+   - Add your frontend URL to `CORS_ALLOWED_ORIGINS`
+   - Ensure credentials are included in frontend requests
+
+4. **Authentication errors**
+   - Check JWT_SECRET is set
+   - Verify token expiration settings
 
 ## License
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
-
-# events-outreach-backend
+[MIT licensed](LICENSE)

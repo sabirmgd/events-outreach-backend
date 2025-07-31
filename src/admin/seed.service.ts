@@ -95,6 +95,13 @@ export class SeedService implements OnModuleInit {
   ) {}
 
   async onModuleInit() {
+    // Disable automatic seeding - should be run manually after migrations
+    const shouldSeed = this.configService.get<string>('RUN_SEEDS') === 'true';
+    if (!shouldSeed) {
+      this.logger.log('Skipping database seeding (RUN_SEEDS is not set to true)');
+      return;
+    }
+    
     this.logger.log('Starting database seeding process...');
     await this.seedPermissions();
     await this.seedSuperAdmin();

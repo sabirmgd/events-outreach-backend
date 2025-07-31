@@ -8,12 +8,17 @@ import { AuthService } from './auth.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { RolesGuard } from './guards/roles.guard';
 import { PermissionsGuard } from './guards/permissions.guard';
+import { CaslGuard } from './guards/casl.guard';
+import { CaslAbilityFactory } from './casl/casl-ability.factory';
+import { PermissionsService } from './permissions.service';
 import { User } from '../user/entities/user.entity';
 import { UserModule } from '../user/user.module';
+import { Organization } from '../organization/entities/organization.entity';
+import { Event } from '../event/entities/event.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User]),
+    TypeOrmModule.forFeature([User, Organization, Event]),
     UserModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
@@ -26,8 +31,23 @@ import { UserModule } from '../user/user.module';
     PassportModule.register({ defaultStrategy: 'jwt' }),
     ConfigModule,
   ],
-  providers: [AuthService, JwtStrategy, RolesGuard, PermissionsGuard],
+  providers: [
+    AuthService,
+    JwtStrategy,
+    RolesGuard,
+    PermissionsGuard,
+    CaslGuard,
+    CaslAbilityFactory,
+    PermissionsService,
+  ],
   controllers: [AuthController],
-  exports: [AuthService, RolesGuard, PermissionsGuard],
+  exports: [
+    AuthService,
+    RolesGuard,
+    PermissionsGuard,
+    CaslGuard,
+    CaslAbilityFactory,
+    PermissionsService,
+  ],
 })
 export class AuthModule {}
