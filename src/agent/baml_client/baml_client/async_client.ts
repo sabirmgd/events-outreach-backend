@@ -87,6 +87,34 @@ export class BamlAsyncClient {
   }
 
   
+  async ExtractEvents(
+      searchResults: string,
+      __baml_options__?: BamlCallOptions
+  ): Promise<types.EventWithDetails[]> {
+    try {
+      const options = { ...this.bamlOptions, ...(__baml_options__ || {}) }
+      const collector = options.collector ? (Array.isArray(options.collector) ? options.collector : [options.collector]) : [];
+      const rawEnv = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
+      const env: Record<string, string> = Object.fromEntries(
+        Object.entries(rawEnv).filter(([_, value]) => value !== undefined) as [string, string][]
+      );
+      const raw = await this.runtime.callFunction(
+        "ExtractEvents",
+        {
+          "searchResults": searchResults
+        },
+        this.ctxManager.cloneContext(),
+        options.tb?.__tb(),
+        options.clientRegistry,
+        collector,
+        env,
+      )
+      return raw.parsed(false) as types.EventWithDetails[]
+    } catch (error) {
+      throw toBamlError(error);
+    }
+  }
+  
   async ResearchEvents(
       location: string,year: number,topic: string,
       __baml_options__?: BamlCallOptions
@@ -128,6 +156,40 @@ class BamlStreamClient {
     this.bamlOptions = bamlOptions || {}
   }
 
+  
+  ExtractEvents(
+      searchResults: string,
+      __baml_options__?: { tb?: TypeBuilder, clientRegistry?: ClientRegistry, collector?: Collector | Collector[], env?: Record<string, string | undefined> }
+  ): BamlStream<partial_types.EventWithDetails[], types.EventWithDetails[]> {
+    try {
+      const options = { ...this.bamlOptions, ...(__baml_options__ || {}) }
+      const collector = options.collector ? (Array.isArray(options.collector) ? options.collector : [options.collector]) : [];
+      const rawEnv = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
+      const env: Record<string, string> = Object.fromEntries(
+        Object.entries(rawEnv).filter(([_, value]) => value !== undefined) as [string, string][]
+      );
+      const raw = this.runtime.streamFunction(
+        "ExtractEvents",
+        {
+          "searchResults": searchResults
+        },
+        undefined,
+        this.ctxManager.cloneContext(),
+        options.tb?.__tb(),
+        options.clientRegistry,
+        collector,
+        env,
+      )
+      return new BamlStream<partial_types.EventWithDetails[], types.EventWithDetails[]>(
+        raw,
+        (a): partial_types.EventWithDetails[] => a,
+        (a): types.EventWithDetails[] => a,
+        this.ctxManager.cloneContext(),
+      )
+    } catch (error) {
+      throw toBamlError(error);
+    }
+  }
   
   ResearchEvents(
       location: string,year: number,topic: string,

@@ -78,4 +78,18 @@ export class CompanyService {
     }
     return { deleted: true, id };
   }
+
+  async findByName(name: string): Promise<Company | null> {
+    return await this.companyRepository
+      .createQueryBuilder('company')
+      .where('LOWER(company.name) = LOWER(:name)', { name: name.trim() })
+      .getOne();
+  }
+
+  async findByWebsite(website: string): Promise<Company | null> {
+    return await this.companyRepository
+      .createQueryBuilder('company')
+      .where('LOWER(company.website) = LOWER(:website)', { website: website.trim() })
+      .getOne();
+  }
 }

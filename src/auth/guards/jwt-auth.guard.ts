@@ -46,7 +46,6 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     }
 
     const typedUser = user as JwtPayload;
-    this.logger.log(`Authentication successful for user: ${typedUser.email}`);
     return typedUser;
   }
 }

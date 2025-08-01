@@ -24,6 +24,7 @@ import { AgentModule } from './agent/agent.module';
 import { AgentsModule } from './agent/agents.module';
 import { OrganizationModule } from './organization/organization.module';
 import { AdminModule } from './admin/admin.module';
+import { SignalModule } from './signal/signal.module';
 
 @Module({
   imports: [
@@ -66,6 +67,7 @@ import { AdminModule } from './admin/admin.module';
     PromptsModule,
     AgentModule,
     AgentsModule,
+    SignalModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -87,4 +87,36 @@ export class GeographyService {
     }
     return { deleted: true, id };
   }
+
+  async findOrCreateCity(data: { name: string; country: string }): Promise<City> {
+    let city = await this.cityRepository.findOne({
+      where: { name: data.name },
+    });
+    
+    if (!city) {
+      // Map common country names to country codes
+      const countryCodeMap: { [key: string]: string } = {
+        'US': 'US',
+        'USA': 'US',
+        'United States': 'US',
+        'United States of America': 'US',
+        'UK': 'GB',
+        'United Kingdom': 'GB',
+        'Canada': 'CA',
+        'Germany': 'DE',
+        'France': 'FR',
+        'Unknown': 'US', // Default to US for unknown
+      };
+      
+      const countryCode = countryCodeMap[data.country] || 'US';
+      
+      city = await this.cityRepository.save({
+        name: data.name,
+        country_code: countryCode,
+        region: '', // TODO: Extract from location
+      });
+    }
+    
+    return city;
+  }
 }

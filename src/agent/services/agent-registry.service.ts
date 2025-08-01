@@ -5,6 +5,8 @@ import {
   AgentInstance,
   AgentDefinition,
   AgentMethodHandler,
+  AgentMethod,
+  AgentParameter,
 } from '../types/agent.types';
 import {
   getAgentMetadata,
@@ -131,6 +133,18 @@ export class AgentRegistryService implements OnModuleInit {
     }
 
     try {
+      // If params is an object, extract values in the order of method parameters
+      if (params && typeof params === 'object' && !Array.isArray(params)) {
+        const methodDef = this.getMethodDefinition(agentId, methodName);
+        if (methodDef && methodDef.parameters) {
+          const orderedParams = methodDef.parameters.map((p: AgentParameter) => params[p.name]);
+          // Create an array with params and context
+          const allParams = [...orderedParams, context];
+          return await method.apply(null, allParams);
+        }
+      }
+      
+      // Fallback to direct call
       return await method(params, context);
     } catch (error) {
       this.logger.error(
@@ -139,6 +153,13 @@ export class AgentRegistryService implements OnModuleInit {
       );
       throw error;
     }
+  }
+
+  getMethodDefinition(agentId: string, methodName: string): AgentMethod | undefined {
+    const agent = this.agents.get(agentId);
+    if (!agent) return undefined;
+    
+    return agent.definition.methods.find(m => m.name === methodName);
   }
 
   validateMethodParams(

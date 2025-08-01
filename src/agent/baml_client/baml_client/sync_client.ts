@@ -89,6 +89,34 @@ export class BamlSyncClient {
   }
 
   
+  ExtractEvents(
+      searchResults: string,
+      __baml_options__?: BamlCallOptions
+  ): types.EventWithDetails[] {
+    try {
+      const options = { ...this.bamlOptions, ...(__baml_options__ || {}) }
+      const collector = options.collector ? (Array.isArray(options.collector) ? options.collector : [options.collector]) : [];
+      const rawEnv = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
+      const env: Record<string, string> = Object.fromEntries(
+        Object.entries(rawEnv).filter(([_, value]) => value !== undefined) as [string, string][]
+      );
+      const raw = this.runtime.callFunctionSync(
+        "ExtractEvents",
+        {
+          "searchResults": searchResults
+        },
+        this.ctxManager.cloneContext(),
+        options.tb?.__tb(),
+        options.clientRegistry,
+        collector,
+        env,
+      )
+      return raw.parsed(false) as types.EventWithDetails[]
+    } catch (error: any) {
+      throw toBamlError(error);
+    }
+  }
+  
   ResearchEvents(
       location: string,year: number,topic: string,
       __baml_options__?: BamlCallOptions

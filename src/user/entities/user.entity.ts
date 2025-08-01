@@ -13,10 +13,10 @@ import { Team } from '../../organization/entities/team.entity';
 import { Role } from '../../auth/entities/role.entity';
 
 // This entity is for internal users of the system.
-@Entity()
+@Entity('users')
 export class User {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
   @Column({ unique: true })
   email: string;
@@ -24,7 +24,7 @@ export class User {
   @Column()
   name: string;
 
-  @Column({ select: false })
+  @Column({ name: 'password_hash', select: false })
   password: string;
 
   @ManyToMany(() => Role, { eager: true })

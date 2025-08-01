@@ -1,5 +1,5 @@
 export class JwtPayload {
-  sub: number;
+  sub: string;
   email: string;
   roles: string[];
   organizationId: string | null;
