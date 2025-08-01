@@ -26,7 +26,7 @@ export class AuthService {
     const user = await this.userRepository.findOne({ 
       where: { email },
       select: ['id', 'email', 'password', 'name'],
-      relations: ['roles', 'organization', 'team']
+      relations: ['roles', 'roles.permissions', 'organization', 'team']
     });
 
     if (!user || !await bcrypt.compare(password, user.password)) {
@@ -34,7 +34,9 @@ export class AuthService {
     }
 
     // Only allow admin users to login to admin-ui
-    const hasAdminRole = user.roles?.some(role => role.name === 'ADMIN');
+    const hasAdminRole = user.roles?.some(role => 
+      role.name === 'ADMIN' || role.name === 'SUPER_ADMIN'
+    );
     if (!hasAdminRole) {
       throw new UnauthorizedException('Access denied. Admin role required.');
     }

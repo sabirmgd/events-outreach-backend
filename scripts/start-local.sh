@@ -52,8 +52,6 @@ until docker-compose exec -T postgres pg_isready -U "$DB_USER" -d "$DB_NAME" -q;
   sleep 1
 done
 
-print_info "PostgreSQL is up - running database seeder..."
-npm run seed
 
 print_info "Starting NestJS application in development mode..."
 npm run start:dev 
