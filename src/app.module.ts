@@ -44,7 +44,7 @@ import { AdminModule } from './admin/admin.module';
         database: config.get<string>('db.name'),
         ssl: config.get<boolean>('db.ssl'),
         autoLoadEntities: true,
-        synchronize: false, // keep migrations in control
+        synchronize: process.env.NODE_ENV !== 'production', // auto-sync in dev
       }),
       inject: [ConfigService],
     }),

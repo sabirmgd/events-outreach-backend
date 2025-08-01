@@ -9,12 +9,16 @@ async function bootstrap() {
   const logger = new Logger('Bootstrap');
   logger.log('[Bootstrap] Creating NestJS application...');
   const app = await NestFactory.create(AppModule);
-  
+
   // Enable WebSocket adapter
   app.useWebSocketAdapter(new IoAdapter(app));
 
   app.enableCors({
-    origin: ['http://localhost:5173', 'http://localhost:3001'],
+    origin: [
+      'http://localhost:5173',
+      'http://localhost:3001',
+      'http://localhost:8080',
+    ],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
   });
@@ -35,17 +39,29 @@ async function bootstrap() {
   logger.log('[Bootstrap] Setting up server configuration...');
   const config = app.get(ConfigService);
   const port = config.get('app.port') || 3000;
-  
+
   logger.log(`[Bootstrap] Starting server on port ${port}...`);
   await app.listen(port);
-  
-  logger.log(`[Bootstrap] ✅ Application is running on: http://localhost:${port}`);
-  logger.log(`[Bootstrap] ✅ Swagger documentation is available at: http://localhost:${port}/api`);
-  logger.log('[Bootstrap] ✅ WebSocket gateway available at: /agent-execution namespace');
-  
+
+  logger.log(
+    `[Bootstrap] ✅ Application is running on: http://localhost:${port}`,
+  );
+  logger.log(
+    `[Bootstrap] ✅ Swagger documentation is available at: http://localhost:${port}/api`,
+  );
+  logger.log(
+    '[Bootstrap] ✅ WebSocket gateway available at: /agent-execution namespace',
+  );
+
   // Log environment status
-  logger.log(`[Bootstrap] Environment: ${process.env.NODE_ENV || 'development'}`);
-  logger.log(`[Bootstrap] ANTHROPIC_API_KEY: ${process.env.ANTHROPIC_API_KEY ? '✅ Configured' : '❌ Missing'}`);
-  logger.log(`[Bootstrap] TAVILY_API_KEY: ${process.env.TAVILY_API_KEY ? '✅ Configured' : '❌ Missing'}`);
+  logger.log(
+    `[Bootstrap] Environment: ${process.env.NODE_ENV || 'development'}`,
+  );
+  logger.log(
+    `[Bootstrap] ANTHROPIC_API_KEY: ${process.env.ANTHROPIC_API_KEY ? '✅ Configured' : '❌ Missing'}`,
+  );
+  logger.log(
+    `[Bootstrap] TAVILY_API_KEY: ${process.env.TAVILY_API_KEY ? '✅ Configured' : '❌ Missing'}`,
+  );
 }
 bootstrap();

@@ -77,7 +77,9 @@ export class AdminService {
       const admin = org.teams
         .flatMap((team) => team.members)
         .find((user) =>
-          user.roles?.some((role: Role) => role.name === 'ADMIN'),
+          user.roles?.some((role: Role) => 
+            role.name === 'ADMIN' || role.name === 'SUPER_ADMIN'
+          ),
         );
 
       return {
@@ -112,7 +114,9 @@ export class AdminService {
       const admin = organization.teams
         .flatMap((team) => team.members)
         .find((user) =>
-          user.roles?.some((role: Role) => role.name === 'ADMIN'),
+          user.roles?.some((role: Role) => 
+            role.name === 'ADMIN' || role.name === 'SUPER_ADMIN'
+          ),
         );
 
       if (admin) {
