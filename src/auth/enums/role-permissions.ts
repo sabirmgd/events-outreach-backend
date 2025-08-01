@@ -2,6 +2,11 @@ import { Role } from './role.enum';
 import { Permission } from './permission.enum';
 
 export const RolePermissions: Record<Role, Permission[]> = {
+  [Role.SUPER_ADMIN]: [
+    // Super Admin has all permissions
+    ...Object.values(Permission),
+  ],
+
   [Role.ADMIN]: [
     // Admin has all permissions
     ...Object.values(Permission),
