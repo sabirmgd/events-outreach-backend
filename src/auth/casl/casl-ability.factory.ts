@@ -37,6 +37,8 @@ export class CaslAbilityFactory {
       switch (role) {
         case 'SUPER_ADMIN':
           can(Action.Manage, 'all');
+          // Explicitly grant all specific actions for clarity
+          can([Action.Create, Action.Read, Action.Update, Action.Delete], 'all');
           break;
           
         case 'ADMIN':

@@ -35,10 +35,12 @@ export class CaslGuard implements CanActivate {
     const ability = this.caslAbilityFactory.createForUser(user);
 
     for (const permission of requiredPermissions) {
+      // First check if user has global permission (like SUPER_ADMIN with Action.Manage on 'all')
       if (ability.can(permission.action, permission.subject)) {
         continue;
       }
 
+      // For specific resource permissions, check the resource if ID is provided
       if (params.id) {
         const resource = await this.permissionsService.findOneById(
           permission.subject as string,
@@ -48,6 +50,7 @@ export class CaslGuard implements CanActivate {
           throw new ForbiddenException('Forbidden resource');
         }
       } else {
+        // For list endpoints without ID, if user doesn't have global permission, deny access
         throw new ForbiddenException('Forbidden resource');
       }
     }
