@@ -20,15 +20,15 @@ export class CreateOutreachSequenceWithStepsDto {
 
   @IsString()
   @IsOptional()
-  discovery_prompt?: string;
+  discovery_prompt: string;
 
   @IsString()
   @IsOptional()
-  outreach_context?: string;
+  outreach_context: string;
 
   @IsObject()
   @IsOptional()
-  template_variables?: Record<string, string>;
+  template_variables: Record<string, string>;
 
   @IsString()
   @IsOptional()

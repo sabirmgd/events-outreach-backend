@@ -19,11 +19,11 @@ import { z } from 'zod';
 import { ConfigService } from '@nestjs/config';
 import { GenerateMessagePreviewDto } from './dto/generate-message-preview.dto';
 import { SignalService } from '../signal/signal.service';
-import { StructuredOutputParser } from 'langchain/output_parsers';
+import { ChatAnthropic } from '@langchain/anthropic';
 
 @Injectable()
 export class OutreachService {
-  private readonly llm: ChatOpenAI;
+  private readonly llm: ChatAnthropic;
 
   constructor(
     @InjectRepository(OutreachSequence)
@@ -39,9 +39,9 @@ export class OutreachService {
     private readonly signalService: SignalService,
     private readonly configService: ConfigService,
   ) {
-    this.llm = new ChatOpenAI({
-      modelName: 'gpt-4o',
-      apiKey: this.configService.get<string>('OPENAI_API_KEY'),
+    this.llm = new ChatAnthropic({
+      modelName: 'claude-3-5-sonnet-20240620',
+      apiKey: this.configService.get<string>('ANTHROPIC_API_KEY'),
     });
   }
 

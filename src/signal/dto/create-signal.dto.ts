@@ -85,7 +85,7 @@ export class CreateSignalDto {
   @IsOptional()
   @ValidateNested()
   @Type(() => CreateOutreachSequenceWithStepsDto)
-  outreachSequence?: CreateOutreachSequenceWithStepsDto;
+  outreachSequence: CreateOutreachSequenceWithStepsDto;
 
   @IsUUID()
   @IsOptional()

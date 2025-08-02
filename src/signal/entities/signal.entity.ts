@@ -20,6 +20,7 @@ export enum SignalType {
   HIRING = 'hiring',
   PRODUCT_LAUNCH = 'product_launch',
   ACQUISITION = 'acquisition',
+  EVENT = 'event',
 }
 
 export enum SignalStatus {

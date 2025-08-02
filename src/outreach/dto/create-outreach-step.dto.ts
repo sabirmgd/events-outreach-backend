@@ -17,27 +17,25 @@ export class CreateOutreachStepDto {
 
   @IsString()
   @IsOptional()
-  channel_strategy?: string;
+  channel_strategy: string;
 
   @IsBoolean()
   @IsOptional()
-  use_ai_generation?: boolean;
+  use_ai_generation: boolean;
 
   @IsString()
   @IsOptional()
-  message_length?: 'short' | 'medium' | 'long';
+  message_length: 'short' | 'medium' | 'long';
 
   @IsInt()
   @IsNotEmpty()
   day_offset: number;
 
   @IsString()
-  @IsOptional()
-  subject_template?: string;
+  subject_template: string;
 
   @IsString()
-  @IsOptional()
-  body_template?: string;
+  body_template: string;
 
   @IsInt()
   @IsOptional()
