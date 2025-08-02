@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, NotFoundException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -8,7 +8,7 @@ import { ConfigService } from '@nestjs/config';
 import { LoginDto } from './dto/login.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { UserService } from '../user/user.service';
-import { Role } from './enums/role.enum';
+import { AcceptInvitationDto } from './dto/accept-invitation.dto';
 
 @Injectable()
 export class AuthService {
@@ -24,16 +24,15 @@ export class AuthService {
     const { email, password } = loginDto;
     
     const user = await this.userRepository.findOne({ 
-      where: { email },
-      select: ['id', 'email', 'password', 'name'],
+      where: { email, is_active: true },
+      select: ['id', 'email', 'password', 'name', 'is_active'],
       relations: ['roles', 'roles.permissions', 'organization', 'team']
     });
 
-    if (!user || !await bcrypt.compare(password, user.password)) {
+    if (!user || !user.password || !await bcrypt.compare(password, user.password)) {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    // Only allow admin users to login to admin-ui
     const hasAdminRole = user.roles?.some(role => 
       role.name === 'ADMIN' || role.name === 'SUPER_ADMIN'
     );
@@ -51,7 +50,49 @@ export class AuthService {
 
     const tokens = await this.generateTokens(payload);
     
-    // Store refresh token hash in database
+    await this.updateRefreshToken(user.id, tokens.refresh_token);
+
+    const { password: userPassword, ...userWithoutPassword } = user;
+    
+    return {
+      ...tokens,
+      user: userWithoutPassword
+    };
+  }
+
+  async acceptInvitation(dto: AcceptInvitationDto) {
+    const { token, password } = dto;
+
+    const user = await this.userRepository.findOne({ 
+      where: { invitationToken: token },
+      relations: ['roles', 'organization', 'team']
+    });
+
+    if (!user) {
+      throw new NotFoundException('Invitation token is invalid.');
+    }
+
+    if (user.invitationExpiresAt && user.invitationExpiresAt < new Date()) {
+      throw new UnauthorizedException('Invitation token has expired.');
+    }
+    
+    user.password = await bcrypt.hash(password, 10);
+    user.is_active = true;
+    user.invitationToken = undefined;
+    user.invitationExpiresAt = undefined;
+
+    await this.userRepository.save(user);
+
+    const payload = { 
+      sub: user.id, 
+      email: user.email,
+      roles: user.roles?.map(role => role.name) || [],
+      organizationId: user.organization?.id || null,
+      teamId: user.team?.id || null
+    };
+
+    const tokens = await this.generateTokens(payload);
+    
     await this.updateRefreshToken(user.id, tokens.refresh_token);
 
     const { password: userPassword, ...userWithoutPassword } = user;

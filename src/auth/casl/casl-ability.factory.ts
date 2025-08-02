@@ -38,9 +38,12 @@ export class CaslAbilityFactory {
         case 'SUPER_ADMIN':
           can(Action.Manage, 'all');
           // Explicitly grant all specific actions for clarity
-          can([Action.Create, Action.Read, Action.Update, Action.Delete], 'all');
+          can(
+            [Action.Create, Action.Read, Action.Update, Action.Delete],
+            'all',
+          );
           break;
-          
+
         case 'ADMIN':
           if (orgId) {
             can(Action.Manage, Event, { organization: { id: orgId } } as any);
@@ -54,7 +57,6 @@ export class CaslAbilityFactory {
             can(Action.Manage, User, { organization: { id: orgId } } as any);
           }
           break;
-          
         case 'USER':
           if (orgId) {
             can(Action.Manage, Event, { organization: { id: orgId } } as any);

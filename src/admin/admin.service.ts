@@ -8,8 +8,6 @@ import { UpdateOrganizationDto } from './dto/update-organization.dto';
 import { User } from '../user/entities/user.entity';
 import { Team } from '../organization/entities/team.entity';
 import { randomBytes } from 'crypto';
-import * as bcrypt from 'bcrypt';
-import * as crypto from 'crypto';
 
 @Injectable()
 export class AdminService {
@@ -36,15 +34,18 @@ export class AdminService {
     });
     await this.teamRepository.save(newTeam);
 
-    const token = randomBytes(32).toString('hex');
+    const invitationToken = randomBytes(32).toString('hex');
     const expires = new Date();
     expires.setDate(expires.getDate() + 1); // Token is valid for 1 day
 
     const adminUser = this.userRepository.create({
       name: dto.adminName,
       email: dto.adminEmail,
-      is_active: false,
-      password: await bcrypt.hash(crypto.randomBytes(16).toString('hex'), 10), // Temporary password
+      is_active: false, // User is inactive until invitation is accepted
+      invitationToken: invitationToken,
+      invitationExpiresAt: expires,
+      organization: newOrganization,
+      team: newTeam,
     });
 
     let adminRole = await this.roleRepository.findOne({
@@ -58,29 +59,23 @@ export class AdminService {
 
     await this.userRepository.save(adminUser);
 
-    // Ensure two-way relation is persisted
-    newTeam.members = [adminUser];
-    await this.teamRepository.save(newTeam);
-
     return {
       organization: newOrganization,
-      invitationToken: token, // Store token separately if needed
+      invitationToken: invitationToken,
     };
   }
 
   async findAllOrganizationsWithAdmins() {
     const organizations = await this.organizationRepository.find({
-      relations: ['teams', 'teams.members', 'teams.members.roles'],
+      relations: ['users', 'users.roles'],
     });
 
     return organizations.map((org) => {
-      const admin = org.teams
-        .flatMap((team) => team.members)
-        .find((user) =>
-          user.roles?.some((role: Role) => 
-            role.name === 'ADMIN' || role.name === 'SUPER_ADMIN'
-          ),
-        );
+      const admin = org.users.find((user) =>
+        user.roles?.some(
+          (role: Role) => role.name === 'ADMIN' || role.name === 'SUPER_ADMIN',
+        ),
+      );
 
       return {
         id: org.id,
@@ -88,6 +83,7 @@ export class AdminService {
         createdAt: org.created_at,
         admin: admin
           ? {
+              id: admin.id,
               name: admin.name,
               email: admin.email,
             }
@@ -99,7 +95,7 @@ export class AdminService {
   async updateOrganization(id: string, dto: UpdateOrganizationDto) {
     const organization = await this.organizationRepository.findOne({
       where: { id },
-      relations: ['teams', 'teams.members', 'teams.members.roles'],
+      relations: ['users', 'users.roles'],
     });
 
     if (!organization) {
@@ -111,13 +107,11 @@ export class AdminService {
     }
 
     if (dto.adminName) {
-      const admin = organization.teams
-        .flatMap((team) => team.members)
-        .find((user) =>
-          user.roles?.some((role: Role) => 
-            role.name === 'ADMIN' || role.name === 'SUPER_ADMIN'
-          ),
-        );
+      const admin = organization.users.find((user) =>
+        user.roles?.some(
+          (role: Role) => role.name === 'ADMIN' || role.name === 'SUPER_ADMIN',
+        ),
+      );
 
       if (admin) {
         admin.name = dto.adminName;
@@ -125,7 +119,36 @@ export class AdminService {
       }
     }
 
-    return this.organizationRepository.save(organization);
+    await this.organizationRepository.save(organization);
+
+    // Refetch to return the updated admin info
+    const updatedOrg = await this.organizationRepository.findOne({
+      where: { id },
+      relations: ['users', 'users.roles'],
+    });
+
+    if (!updatedOrg) {
+      throw new NotFoundException(
+        `Organization with ID ${id} could not be refetched after update.`,
+      );
+    }
+
+    const updatedAdmin = updatedOrg.users.find((user) =>
+      user.roles?.some((role) => role.name === 'ADMIN'),
+    );
+
+    return {
+      id: updatedOrg.id,
+      name: updatedOrg.name,
+      createdAt: updatedOrg.created_at,
+      admin: updatedAdmin
+        ? {
+            id: updatedAdmin.id,
+            name: updatedAdmin.name,
+            email: updatedAdmin.email,
+          }
+        : null,
+    };
   }
 
   async deleteOrganization(id: string) {
@@ -138,6 +161,6 @@ export class AdminService {
     }
 
     await this.organizationRepository.remove(organization);
-    return { message: 'Organization deleted successfully' };
+    return { success: true, message: 'Organization deleted successfully' };
   }
 }

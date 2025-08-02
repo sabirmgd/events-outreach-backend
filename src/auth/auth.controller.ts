@@ -6,8 +6,8 @@ import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { Public } from './decorators/public.decorator';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { CurrentUser } from './decorators/current-user.decorator';
-import { User } from '../user/entities/user.entity';
 import { UserService } from '../user/user.service';
+import { AcceptInvitationDto } from './dto/accept-invitation.dto';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -21,6 +21,12 @@ export class AuthController {
   @Public()
   async login(@Body() loginDto: LoginDto) {
     return this.authService.login(loginDto);
+  }
+
+  @Post('accept-invitation')
+  @Public()
+  async acceptInvitation(@Body() acceptInvitationDto: AcceptInvitationDto) {
+    return this.authService.acceptInvitation(acceptInvitationDto);
   }
 
   @Post('logout')

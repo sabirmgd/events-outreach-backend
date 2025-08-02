@@ -1,4 +1,11 @@
-import { IsString, IsEnum, IsOptional, IsObject, ValidateNested, IsArray, IsNumber, Min, IsBoolean } from 'class-validator';
+import {
+  IsString,
+  IsEnum,
+  IsOptional,
+  IsObject,
+  ValidateNested,
+  IsBoolean,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import { SignalType, SignalFrequency } from '../entities/signal.entity';
 

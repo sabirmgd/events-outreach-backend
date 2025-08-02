@@ -24,8 +24,8 @@ export class User {
   @Column()
   name: string;
 
-  @Column({ name: 'password_hash', select: false })
-  password: string;
+  @Column({ name: 'password_hash', select: false, nullable: true })
+  password?: string;
 
   @ManyToMany(() => Role, { eager: true })
   @JoinTable()
@@ -34,8 +34,19 @@ export class User {
   @Column({ nullable: true, select: false })
   refreshToken?: string;
 
-  @Column({ default: true })
+  @Column({ default: false })
   is_active: boolean;
+
+  @Column({
+    name: 'invitation_token',
+    nullable: true,
+    type: 'varchar',
+    select: false,
+  })
+  invitationToken?: string;
+
+  @Column({ name: 'invitation_expires_at', nullable: true, type: 'timestamp' })
+  invitationExpiresAt?: Date;
 
   @ManyToOne(() => Organization, (organization) => organization.users, {
     nullable: true,
