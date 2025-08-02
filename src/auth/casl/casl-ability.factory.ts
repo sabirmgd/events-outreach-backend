@@ -50,7 +50,7 @@ export class CaslAbilityFactory {
           );
           break;
 
-        case 'ADMIN':
+        case 'ORGANIZATION_ADMIN':
           if (orgId) {
             can(Action.Manage, Event, {
               signal: { organizationId: orgId },

@@ -33,15 +33,76 @@ export class PersonaService {
     return { jobId: job.id };
   }
 
-  create(createPersonDto: CreatePersonDto): Promise<Person> {
-    const person = this.personRepository.create(createPersonDto);
+  create(
+    createPersonDto: CreatePersonDto,
+    organizationId: string,
+  ): Promise<Person> {
+    const person = this.personRepository.create({
+      ...createPersonDto,
+      organization: { id: organizationId },
+    });
     return this.personRepository.save(person);
   }
 
-  findAll(findAllPersonasDto: FindAllPersonasDto): Promise<Person[]> {
-    return this.personRepository.find({
-      relations: findAllPersonasDto.relations || [],
-    });
+  async findAll(
+    findAllPersonasDto: FindAllPersonasDto,
+    organizationId: string,
+  ): Promise<{ data: Person[]; total: number }> {
+    const { page = 1, limit = 20, sort, search } = findAllPersonasDto;
+
+    const queryBuilder = this.personRepository.createQueryBuilder('person');
+
+    queryBuilder
+      .leftJoinAndSelect('person.organization', 'organization')
+      .leftJoinAndSelect('person.companyRoles', 'companyRoles')
+      .leftJoinAndSelect('companyRoles.company', 'company')
+      .leftJoinAndSelect('person.conversations', 'conversation')
+      .leftJoinAndSelect('conversation.sequence', 'sequence')
+      .leftJoinAndSelect('conversation.current_step', 'current_step')
+      .leftJoinAndSelect('conversation.messages', 'messages')
+      .where('organization.id = :organizationId', { organizationId });
+
+    if (search) {
+      queryBuilder.andWhere(
+        '(person.full_name ILIKE :search OR company.name ILIKE :search)',
+        { search: `%${search}%` },
+      );
+    }
+
+    if (sort) {
+      const [sortField, sortOrder] = sort.split(':');
+      const order = sortOrder.toUpperCase() as 'ASC' | 'DESC';
+
+      // Map frontend sort fields to database fields
+      switch (sortField) {
+        case 'lastContact':
+          // Sort by the person's last_updated_at (approximation of last contact)
+          queryBuilder.orderBy('person.last_updated_at', order);
+          break;
+        case 'name':
+          queryBuilder.orderBy('person.full_name', order);
+          break;
+        case 'created_at':
+        case 'updated_at':
+        case 'full_name':
+        case 'first_name':
+        case 'last_name':
+          queryBuilder.orderBy(`person.${sortField}`, order);
+          break;
+        default:
+          // Default to created_at if unknown field
+          queryBuilder.orderBy('person.created_at', order);
+      }
+    } else {
+      queryBuilder.orderBy('person.created_at', 'DESC');
+    }
+
+    const [data, total] = await queryBuilder
+      .skip((page - 1) * limit)
+      .take(limit)
+      .getManyAndCount();
+
+    return { data, total };
   }
 
   async findOne(id: number, relations: string[] = []): Promise<Person> {

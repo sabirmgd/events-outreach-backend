@@ -1,0 +1,138 @@
+{
+  "companies": [
+    {
+      "eventName": "Enterprise Tech Summit 2025",
+      "sponsors": [
+        {
+          "sponsor_tier": "Platinum",
+          "is_past_sponsor": true,
+          "company": {
+            "name": "CloudScale Technologies",
+            "legal_name": "CloudScale Technologies Inc.",
+            "website": "https://cloudscale.tech",
+            "linkedin_url": "https://linkedin.com/company/cloudscale-tech",
+            "crunchbase_url": "https://crunchbase.com/organization/cloudscale-technologies",
+            "employee_range": "200-500",
+            "revenue_range": "$50M-$100M",
+            "primary_industry": "Cloud Infrastructure",
+            "description": "CloudScale Technologies provides enterprise-grade cloud infrastructure solutions that help Fortune 500 companies modernize their IT operations. Our platform enables seamless cloud migration, multi-cloud management, and advanced DevOps automation.",
+            "hq_city": {
+              "name": "San Francisco",
+              "country_code": "US"
+            }
+          }
+        },
+        {
+          "sponsor_tier": "Gold",
+          "is_past_sponsor": false,
+          "company": {
+            "name": "DataStream Analytics",
+            "legal_name": "DataStream Analytics Corp.",
+            "website": "https://datastream.io",
+            "linkedin_url": "https://linkedin.com/company/datastream-analytics",
+            "crunchbase_url": "https://crunchbase.com/organization/datastream-analytics",
+            "employee_range": "50-200",
+            "revenue_range": "$10M-$50M",
+            "primary_industry": "Data Analytics",
+            "description": "DataStream Analytics provides real-time data processing and analytics solutions for enterprise customers. Our platform processes billions of events daily, enabling businesses to make data-driven decisions in real-time.",
+            "hq_city": {
+              "name": "New York",
+              "country_code": "US"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "eventName": "AI Innovation Forum 2025",
+      "sponsors": [
+        {
+          "sponsor_tier": "Gold",
+          "is_past_sponsor": false,
+          "company": {
+            "name": "NeuralTech Solutions",
+            "legal_name": "NeuralTech Solutions LLC",
+            "website": "https://neuraltech.ai",
+            "linkedin_url": "https://linkedin.com/company/neuraltech-solutions",
+            "crunchbase_url": "https://crunchbase.com/organization/neuraltech",
+            "employee_range": "100-200",
+            "revenue_range": "$20M-$50M",
+            "primary_industry": "Artificial Intelligence",
+            "description": "NeuralTech Solutions specializes in enterprise AI solutions for predictive analytics and automation. Our cutting-edge ML models help businesses optimize operations and reduce costs by up to 40%.",
+            "hq_city": {
+              "name": "Boston",
+              "country_code": "US"
+            }
+          }
+        },
+        {
+          "sponsor_tier": "Silver",
+          "is_past_sponsor": true,
+          "company": {
+            "name": "Quantum AI Labs",
+            "legal_name": "Quantum AI Labs Inc.",
+            "website": "https://quantumai.tech",
+            "linkedin_url": "https://linkedin.com/company/quantum-ai-labs",
+            "crunchbase_url": "https://crunchbase.com/organization/quantum-ai-labs",
+            "employee_range": "50-100",
+            "revenue_range": "$5M-$10M",
+            "primary_industry": "AI Research",
+            "description": "Quantum AI Labs pioneers breakthrough AI research in natural language processing and computer vision for enterprise applications.",
+            "hq_city": {
+              "name": "Seattle",
+              "country_code": "US"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "eventName": "Cloud Native Conference 2025",
+      "sponsors": [
+        {
+          "sponsor_tier": "Platinum",
+          "is_past_sponsor": true,
+          "company": {
+            "name": "ContainerTech Pro",
+            "legal_name": "ContainerTech Pro Ltd.",
+            "website": "https://containertech.pro",
+            "linkedin_url": "https://linkedin.com/company/containertech-pro",
+            "crunchbase_url": "https://crunchbase.com/organization/containertech",
+            "employee_range": "100-250",
+            "revenue_range": "$20M-$50M",
+            "primary_industry": "Container Technology",
+            "description": "ContainerTech Pro provides enterprise-grade container orchestration and management solutions built on Kubernetes.",
+            "hq_city": {
+              "name": "Austin",
+              "country_code": "US"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "eventName": "InfoSec World 2025",
+      "sponsors": [
+        {
+          "sponsor_tier": "Platinum",
+          "is_past_sponsor": true,
+          "company": {
+            "name": "SecureShield Technologies",
+            "legal_name": "SecureShield Technologies Inc.",
+            "website": "https://secureshield.tech",
+            "linkedin_url": "https://linkedin.com/company/secureshield-tech",
+            "crunchbase_url": "https://crunchbase.com/organization/secureshield",
+            "employee_range": "100-250",
+            "revenue_range": "$20M-$50M",
+            "primary_industry": "Cybersecurity",
+            "description": "SecureShield provides next-generation endpoint protection and threat intelligence solutions for enterprise clients. Our AI-powered platform detects and prevents advanced threats in real-time.",
+            "hq_city": {
+              "name": "Austin",
+              "country_code": "US"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

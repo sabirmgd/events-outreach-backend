@@ -1,0 +1,170 @@
+{
+  "signals": [
+    {
+      "organizationName": "TechReach Solutions",
+      "signals": [
+        {
+          "name": "Enterprise Tech Conference Signal",
+          "description": "Automated signal to identify and reach out to sponsors of enterprise technology conferences",
+          "type": "conference",
+          "status": "active",
+          "configuration": {
+            "event_type": "conference",
+            "event_keywords": [
+              "enterprise",
+              "technology",
+              "digital transformation",
+              "cloud",
+              "AI"
+            ],
+            "min_attendees": 500,
+            "max_attendees": 5000,
+            "locations": [
+              "San Francisco",
+              "New York",
+              "Austin",
+              "Seattle",
+              "Boston"
+            ],
+            "industries": [
+              "Technology",
+              "Software",
+              "Cloud Computing",
+              "AI/ML",
+              "Cybersecurity"
+            ],
+            "target_functions": [
+              "CTO",
+              "VP Engineering",
+              "Director of Technology",
+              "Head of Innovation"
+            ],
+            "date_range": {
+              "start": "2025-01-01",
+              "end": "2025-12-31"
+            },
+            "extract_sponsors": true,
+            "geographies": ["United States", "Canada"],
+            "company_size": ["50-200", "200-1000", "1000+"],
+            "technologies": ["cloud", "kubernetes", "AI", "machine learning"]
+          },
+          "schedule": {
+            "frequency": "weekly",
+            "time": "09:00",
+            "timezone": "America/New_York",
+            "enabled": true
+          },
+          "stats": {
+            "totalExecutions": 1,
+            "totalEventsFound": 3,
+            "totalCompaniesIdentified": 6,
+            "totalContactsDiscovered": 12,
+            "totalMessagesSent": 8,
+            "totalResponses": 2,
+            "totalMeetingsBooked": 1
+          }
+        },
+        {
+          "name": "Series B Funding Signal",
+          "description": "Track companies that recently raised Series B funding for enterprise software opportunities",
+          "type": "funding",
+          "status": "active",
+          "configuration": {
+            "funding_stage": "Series B",
+            "min_amount": 10000000,
+            "max_amount": 100000000,
+            "days_since_funding": 90,
+            "industries": ["Enterprise Software", "SaaS", "Cloud Computing"],
+            "geographies": ["United States"],
+            "company_size": ["50-200", "200-500"],
+            "technologies": ["cloud", "enterprise", "B2B"]
+          },
+          "schedule": {
+            "frequency": "daily",
+            "time": "08:00",
+            "timezone": "America/New_York",
+            "enabled": true
+          },
+          "stats": {
+            "totalExecutions": 0,
+            "totalEventsFound": 0,
+            "totalCompaniesIdentified": 0,
+            "totalContactsDiscovered": 0,
+            "totalMessagesSent": 0,
+            "totalResponses": 0,
+            "totalMeetingsBooked": 0
+          }
+        }
+      ]
+    },
+    {
+      "organizationName": "EventConnect Pro",
+      "signals": [
+        {
+          "name": "Cybersecurity Conference Signal",
+          "description": "Track cybersecurity conferences and their sponsors for security solution providers",
+          "type": "conference",
+          "status": "active",
+          "configuration": {
+            "event_type": "conference",
+            "event_keywords": [
+              "cybersecurity",
+              "infosec",
+              "security",
+              "threat detection",
+              "zero trust"
+            ],
+            "min_attendees": 300,
+            "max_attendees": 3000,
+            "locations": [
+              "Las Vegas",
+              "San Francisco",
+              "Washington DC",
+              "London",
+              "Singapore"
+            ],
+            "industries": [
+              "Cybersecurity",
+              "Information Security",
+              "Network Security"
+            ],
+            "target_functions": [
+              "CISO",
+              "Security Director",
+              "VP of Security",
+              "Security Architect"
+            ],
+            "date_range": {
+              "start": "2025-01-01",
+              "end": "2025-12-31"
+            },
+            "extract_sponsors": true,
+            "geographies": ["United States", "United Kingdom", "Singapore"],
+            "company_size": ["100-500", "500-1000", "1000+"],
+            "technologies": [
+              "security",
+              "firewall",
+              "SIEM",
+              "endpoint protection"
+            ]
+          },
+          "schedule": {
+            "frequency": "weekly",
+            "time": "10:00",
+            "timezone": "America/Los_Angeles",
+            "enabled": true
+          },
+          "stats": {
+            "totalExecutions": 0,
+            "totalEventsFound": 0,
+            "totalCompaniesIdentified": 0,
+            "totalContactsDiscovered": 0,
+            "totalMessagesSent": 0,
+            "totalResponses": 0,
+            "totalMeetingsBooked": 0
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "organizations": [
+    {
+      "name": "TechReach Solutions",
+      "admin": {
+        "name": "Admin User",
+        "email": "sabirmgd+admin@gmail.com",
+        "password": "securePassword123!"
+      }
+    },
+    {
+      "name": "EventConnect Pro",
+      "admin": {
+        "name": "Event Admin",
+        "email": "sabirmgd+eventadmin@gmail.com",
+        "password": "securePassword123!"
+      }
+    }
+  ]
+}

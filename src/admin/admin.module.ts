@@ -17,6 +17,13 @@ import { EventSponsor } from '../event/entities/event-sponsor.entity';
 import { Person } from '../persona/entities/person.entity';
 import { CompanyPersonRole } from '../persona/entities/company-person-role.entity';
 import { Signal } from '../signal/entities/signal.entity';
+import { SignalExecution } from '../signal/entities/signal-execution.entity';
+import { OutreachSequence } from '../outreach/entities/outreach-sequence.entity';
+import { OutreachStepTemplate } from '../outreach/entities/outreach-step-template.entity';
+import { Conversation } from '../outreach/entities/conversation.entity';
+import { Message } from '../outreach/entities/message.entity';
+import { Venue } from '../geography/entities/venue.entity';
+import { ContactChannel } from '../persona/entities/contact-channel.entity';
 
 @Module({
   imports: [
@@ -35,6 +42,13 @@ import { Signal } from '../signal/entities/signal.entity';
       Person,
       CompanyPersonRole,
       Signal,
+      SignalExecution,
+      OutreachSequence,
+      OutreachStepTemplate,
+      Conversation,
+      Message,
+      Venue,
+      ContactChannel,
     ]),
   ],
   controllers: [AdminController],

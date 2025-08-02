@@ -1,0 +1,268 @@
+{
+  "personas": [
+    {
+      "companyName": "CloudScale Technologies",
+      "contacts": [
+        {
+          "full_name": "John Smith",
+          "first_name": "John",
+          "last_name": "Smith",
+          "linkedin_url": "https://www.linkedin.com/in/sharanjm/",
+          "seniority": "vp",
+          "current_title": "VP of Partnerships",
+          "location_text": "San Francisco Bay Area",
+          "source_confidence": 0.95,
+          "role_title": "VP of Partnerships",
+          "role_category": "partnerships",
+          "is_decision_maker": true,
+          "start_date": "2023-01-15",
+          "contact_channels": [
+            {
+              "type": "email",
+              "value": "sabirmgd+johnsmith@gmail.com",
+              "validation_status": "valid"
+            },
+            {
+              "type": "linkedin",
+              "value": "https://www.linkedin.com/in/sharanjm/",
+              "validation_status": "valid"
+            }
+          ]
+        },
+        {
+          "full_name": "Sarah Johnson",
+          "first_name": "Sarah",
+          "last_name": "Johnson",
+          "linkedin_url": "https://www.linkedin.com/in/sabir-moglad-a0b38b68/",
+          "seniority": "director",
+          "current_title": "Director of Marketing",
+          "location_text": "San Francisco, CA",
+          "source_confidence": 0.92,
+          "role_title": "Director of Marketing",
+          "role_category": "marketing",
+          "is_decision_maker": true,
+          "start_date": "2022-06-01",
+          "contact_channels": [
+            {
+              "type": "email",
+              "value": "sabirmgd+sarahjohnson@gmail.com",
+              "validation_status": "valid"
+            },
+            {
+              "type": "linkedin",
+              "value": "https://www.linkedin.com/in/sabir-moglad-a0b38b68/",
+              "validation_status": "valid"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "companyName": "DataStream Analytics",
+      "contacts": [
+        {
+          "full_name": "Michael Chen",
+          "first_name": "Michael",
+          "last_name": "Chen",
+          "linkedin_url": "https://www.linkedin.com/in/sharanjm/",
+          "seniority": "c_level",
+          "current_title": "Chief Marketing Officer",
+          "location_text": "New York, NY",
+          "source_confidence": 0.98,
+          "role_title": "Chief Marketing Officer",
+          "role_category": "c_level",
+          "is_decision_maker": true,
+          "start_date": "2021-03-01",
+          "contact_channels": [
+            {
+              "type": "email",
+              "value": "sabirmgd+michaelchen@gmail.com",
+              "validation_status": "valid"
+            },
+            {
+              "type": "linkedin",
+              "value": "https://www.linkedin.com/in/sharanjm/",
+              "validation_status": "valid"
+            }
+          ]
+        },
+        {
+          "full_name": "Lisa Wang",
+          "first_name": "Lisa",
+          "last_name": "Wang",
+          "linkedin_url": "https://www.linkedin.com/in/sabir-moglad-a0b38b68/",
+          "seniority": "vp",
+          "current_title": "VP of Sales",
+          "location_text": "New York, NY",
+          "source_confidence": 0.94,
+          "role_title": "VP of Sales",
+          "role_category": "sales",
+          "is_decision_maker": true,
+          "start_date": "2022-02-15",
+          "contact_channels": [
+            {
+              "type": "email",
+              "value": "sabirmgd+lisawang@gmail.com",
+              "validation_status": "valid"
+            },
+            {
+              "type": "linkedin",
+              "value": "https://www.linkedin.com/in/sabir-moglad-a0b38b68/",
+              "validation_status": "valid"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "companyName": "NeuralTech Solutions",
+      "contacts": [
+        {
+          "full_name": "Emily Zhang",
+          "first_name": "Emily",
+          "last_name": "Zhang",
+          "linkedin_url": "https://www.linkedin.com/in/sabir-moglad-a0b38b68/",
+          "seniority": "director",
+          "current_title": "Director of Business Development",
+          "location_text": "Boston, MA",
+          "source_confidence": 0.93,
+          "role_title": "Director of Business Development",
+          "role_category": "sales",
+          "is_decision_maker": true,
+          "start_date": "2023-08-01",
+          "contact_channels": [
+            {
+              "type": "email",
+              "value": "sabirmgd+emilyzhang@gmail.com",
+              "validation_status": "valid"
+            },
+            {
+              "type": "linkedin",
+              "value": "https://www.linkedin.com/in/sabir-moglad-a0b38b68/",
+              "validation_status": "valid"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "companyName": "SecureShield Technologies",
+      "contacts": [
+        {
+          "full_name": "David Wilson",
+          "first_name": "David",
+          "last_name": "Wilson",
+          "linkedin_url": "https://www.linkedin.com/in/sharanjm/",
+          "seniority": "vp",
+          "current_title": "VP of Channel Partnerships",
+          "location_text": "Austin, TX",
+          "source_confidence": 0.96,
+          "role_title": "VP of Channel Partnerships",
+          "role_category": "partnerships",
+          "is_decision_maker": true,
+          "start_date": "2022-11-01",
+          "contact_channels": [
+            {
+              "type": "email",
+              "value": "sabirmgd+davidwilson@gmail.com",
+              "validation_status": "valid"
+            },
+            {
+              "type": "linkedin",
+              "value": "https://www.linkedin.com/in/sharanjm/",
+              "validation_status": "valid"
+            }
+          ]
+        },
+        {
+          "full_name": "Amanda Brown",
+          "first_name": "Amanda",
+          "last_name": "Brown",
+          "linkedin_url": "https://www.linkedin.com/in/sabir-moglad-a0b38b68/",
+          "seniority": "director",
+          "current_title": "Director of Marketing",
+          "location_text": "Austin, TX",
+          "source_confidence": 0.91,
+          "role_title": "Director of Marketing",
+          "role_category": "marketing",
+          "is_decision_maker": true,
+          "start_date": "2023-04-01",
+          "contact_channels": [
+            {
+              "type": "email",
+              "value": "sabirmgd+amandabrown@gmail.com",
+              "validation_status": "valid"
+            },
+            {
+              "type": "linkedin",
+              "value": "https://www.linkedin.com/in/sabir-moglad-a0b38b68/",
+              "validation_status": "valid"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "companyName": "Quantum AI Labs",
+      "contacts": [
+        {
+          "full_name": "Robert Lee",
+          "first_name": "Robert",
+          "last_name": "Lee",
+          "linkedin_url": "https://www.linkedin.com/in/sharanjm/",
+          "seniority": "c_level",
+          "current_title": "CEO",
+          "location_text": "Seattle, WA",
+          "source_confidence": 0.99,
+          "role_title": "Chief Executive Officer",
+          "role_category": "c_level",
+          "is_decision_maker": true,
+          "start_date": "2020-01-01",
+          "contact_channels": [
+            {
+              "type": "email",
+              "value": "sabirmgd+robertlee@gmail.com",
+              "validation_status": "valid"
+            },
+            {
+              "type": "linkedin",
+              "value": "https://www.linkedin.com/in/sharanjm/",
+              "validation_status": "valid"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "companyName": "ContainerTech Pro",
+      "contacts": [
+        {
+          "full_name": "James Martinez",
+          "first_name": "James",
+          "last_name": "Martinez",
+          "linkedin_url": "https://www.linkedin.com/in/sabir-moglad-a0b38b68/",
+          "seniority": "director",
+          "current_title": "Director of Partnerships",
+          "location_text": "Austin, TX",
+          "source_confidence": 0.95,
+          "role_title": "Director of Partnerships",
+          "role_category": "partnerships",
+          "is_decision_maker": true,
+          "start_date": "2023-06-15",
+          "contact_channels": [
+            {
+              "type": "email",
+              "value": "sabirmgd+jamesmartinez@gmail.com",
+              "validation_status": "valid"
+            },
+            {
+              "type": "linkedin",
+              "value": "https://www.linkedin.com/in/sabir-moglad-a0b38b68/",
+              "validation_status": "valid"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

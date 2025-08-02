@@ -7,7 +7,7 @@ export const RolePermissions: Record<Role, Permission[]> = {
     ...Object.values(Permission),
   ],
 
-  [Role.ADMIN]: [
+  [Role.ORGANIZATION_ADMIN]: [
     // Admin has all permissions
     ...Object.values(Permission),
   ],

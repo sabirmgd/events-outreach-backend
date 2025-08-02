@@ -2,11 +2,14 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { Conversation } from '../../outreach/entities/conversation.entity';
+import { CompanyPersonRole } from './company-person-role.entity';
+import { Organization } from '../../organization/entities/organization.entity';
 
 @Entity('persons')
 export class Person {
@@ -37,8 +40,14 @@ export class Person {
   @Column('float', { nullable: true })
   source_confidence: number;
 
+  @ManyToOne(() => Organization, { nullable: false })
+  organization: Organization;
+
   @OneToMany(() => Conversation, (conversation) => conversation.person)
   conversations: Conversation[];
+
+  @OneToMany(() => CompanyPersonRole, (role) => role.person)
+  companyRoles: CompanyPersonRole[];
 
   @CreateDateColumn()
   created_at: Date;

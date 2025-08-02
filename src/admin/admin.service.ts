@@ -49,10 +49,10 @@ export class AdminService {
     });
 
     let adminRole = await this.roleRepository.findOne({
-      where: { name: 'ADMIN' },
+      where: { name: 'ORGANIZATION_ADMIN' },
     });
     if (!adminRole) {
-      adminRole = this.roleRepository.create({ name: 'ADMIN' });
+      adminRole = this.roleRepository.create({ name: 'ORGANIZATION_ADMIN' });
       await this.roleRepository.save(adminRole);
     }
     adminUser.roles = [adminRole];
@@ -73,7 +73,8 @@ export class AdminService {
     return organizations.map((org) => {
       const admin = org.users.find((user) =>
         user.roles?.some(
-          (role: Role) => role.name === 'ADMIN' || role.name === 'SUPER_ADMIN',
+          (role: Role) =>
+            role.name === 'ORGANIZATION_ADMIN' || role.name === 'SUPER_ADMIN',
         ),
       );
 
@@ -109,7 +110,8 @@ export class AdminService {
     if (dto.adminName) {
       const admin = organization.users.find((user) =>
         user.roles?.some(
-          (role: Role) => role.name === 'ADMIN' || role.name === 'SUPER_ADMIN',
+          (role: Role) =>
+            role.name === 'ORGANIZATION_ADMIN' || role.name === 'SUPER_ADMIN',
         ),
       );
 
@@ -134,7 +136,7 @@ export class AdminService {
     }
 
     const updatedAdmin = updatedOrg.users.find((user) =>
-      user.roles?.some((role) => role.name === 'ADMIN'),
+      user.roles?.some((role) => role.name === 'ORGANIZATION_ADMIN'),
     );
 
     return {

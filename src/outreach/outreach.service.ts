@@ -14,7 +14,6 @@ import { EventService } from '../event/event.service';
 import { HandleReplyDto } from './dto/handle-reply.dto';
 import { ConversationStage } from './enums/conversation-stage.enum';
 import { ConversationAutomationStatus } from './enums/conversation-automation-status.enum';
-import { ChatOpenAI } from '@langchain/openai';
 import { z } from 'zod';
 import { ConfigService } from '@nestjs/config';
 import { GenerateMessagePreviewDto } from './dto/generate-message-preview.dto';
@@ -243,7 +242,12 @@ export class OutreachService {
     const sequence = await this.findOne(sequenceId, signalId);
 
     // TODO: Use discovery_prompt to find personas instead of getting all
-    const personas = await this.personaService.findAll({});
+    // For now, get all personas from the same organization as the signal
+    const signal = await this.signalService.findOne(signalId);
+    const personasResult = await this.personaService.findAll(
+      {},
+      signal.organizationId,
+    );
 
     // Find the first step (lowest day_offset)
     const firstStep = await this.outreachStepTemplateRepository.findOne({
@@ -260,7 +264,7 @@ export class OutreachService {
     }
 
     const conversations = [];
-    for (const person of personas) {
+    for (const person of personasResult.data) {
       const conversation = this.conversationRepository.create({
         person,
         sequence,

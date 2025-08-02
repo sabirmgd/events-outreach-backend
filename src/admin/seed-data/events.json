@@ -1,0 +1,104 @@
+{
+  "events": [
+    {
+      "signalName": "Enterprise Tech Conference Signal",
+      "organizationName": "TechReach Solutions",
+      "events": [
+        {
+          "name": "Enterprise Tech Summit 2025",
+          "start_dt": "2025-03-15T09:00:00Z",
+          "end_dt": "2025-03-17T17:00:00Z",
+          "website_url": "https://enterprisetechsummit.com",
+          "status": "planned",
+          "timezone": "America/Los_Angeles",
+          "expected_attendance_int": 2500,
+          "size_band": "1000-5000",
+          "description_text": "The premier gathering for enterprise technology leaders, featuring 200+ speakers, 150+ exhibitors, and cutting-edge technology demonstrations.",
+          "venue": {
+            "name": "Moscone Center",
+            "address": "747 Howard St, San Francisco, CA 94103",
+            "lat": 37.784173,
+            "lon": -122.401557,
+            "normalized_name": "moscone_center_san_francisco"
+          },
+          "city": {
+            "name": "San Francisco",
+            "country_code": "US"
+          }
+        },
+        {
+          "name": "AI Innovation Forum 2025",
+          "start_dt": "2025-05-20T09:00:00Z",
+          "end_dt": "2025-05-22T17:00:00Z",
+          "website_url": "https://aiinnovationforum.com",
+          "status": "planned",
+          "timezone": "America/New_York",
+          "expected_attendance_int": 1800,
+          "size_band": "1000-5000",
+          "description_text": "Leading AI conference bringing together researchers, practitioners, and business leaders to explore the latest in artificial intelligence and machine learning.",
+          "venue": {
+            "name": "Javits Center",
+            "address": "429 11th Ave, New York, NY 10001",
+            "lat": 40.757,
+            "lon": -74.002,
+            "normalized_name": "javits_center_new_york"
+          },
+          "city": {
+            "name": "New York",
+            "country_code": "US"
+          }
+        },
+        {
+          "name": "Cloud Native Conference 2025",
+          "start_dt": "2025-07-10T09:00:00Z",
+          "end_dt": "2025-07-12T17:00:00Z",
+          "website_url": "https://cloudnativeconf2025.com",
+          "status": "planned",
+          "timezone": "America/Chicago",
+          "expected_attendance_int": 3000,
+          "size_band": "1000-5000",
+          "description_text": "The definitive conference for cloud native technologies, Kubernetes, and microservices architecture.",
+          "venue": {
+            "name": "Austin Convention Center",
+            "address": "500 E Cesar Chavez St, Austin, TX 78701",
+            "lat": 30.263,
+            "lon": -97.739,
+            "normalized_name": "austin_convention_center"
+          },
+          "city": {
+            "name": "Austin",
+            "country_code": "US"
+          }
+        }
+      ]
+    },
+    {
+      "signalName": "Cybersecurity Conference Signal",
+      "organizationName": "EventConnect Pro",
+      "events": [
+        {
+          "name": "InfoSec World 2025",
+          "start_dt": "2025-04-10T09:00:00Z",
+          "end_dt": "2025-04-12T17:00:00Z",
+          "website_url": "https://infosecworld2025.com",
+          "status": "planned",
+          "timezone": "America/Los_Angeles",
+          "expected_attendance_int": 1500,
+          "size_band": "1000-5000",
+          "description_text": "Premier cybersecurity conference featuring the latest in threat detection, incident response, and security architecture.",
+          "venue": {
+            "name": "Mandalay Bay Convention Center",
+            "address": "3950 S Las Vegas Blvd, Las Vegas, NV 89119",
+            "lat": 36.0919,
+            "lon": -115.175,
+            "normalized_name": "mandalay_bay_las_vegas"
+          },
+          "city": {
+            "name": "Las Vegas",
+            "country_code": "US"
+          }
+        }
+      ]
+    }
+  ]
+}

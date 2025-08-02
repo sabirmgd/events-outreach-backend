@@ -791,14 +791,17 @@ export class SignalExecutionService {
             }
 
             if (!person) {
-              person = await this.personaService.create({
-                full_name: personData.name.trim(),
-                first_name: personData.name.split(' ')[0],
-                last_name: personData.name.split(' ').slice(1).join(' '),
-                current_title: personData.title,
-                linkedin_url: personData.linkedinUrl || '',
-                seniority: this.extractSeniority(personData.title),
-              });
+              person = await this.personaService.create(
+                {
+                  full_name: personData.name.trim(),
+                  first_name: personData.name.split(' ')[0],
+                  last_name: personData.name.split(' ').slice(1).join(' '),
+                  current_title: personData.title,
+                  linkedin_url: personData.linkedinUrl || '',
+                  seniority: this.extractSeniority(personData.title),
+                },
+                signal.organizationId,
+              );
               this.logger.log(`Created new person: ${person.full_name}`);
             } else {
               this.logger.log(`Found existing person: ${person.full_name}`);

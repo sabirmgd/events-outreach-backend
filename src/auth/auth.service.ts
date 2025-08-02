@@ -42,14 +42,17 @@ export class AuthService {
     }
 
     const hasAdminRole = user.roles?.some(
-      (role) => role.name === 'ADMIN' || role.name === 'SUPER_ADMIN',
+      (role) =>
+        role.name === 'ORGANIZATION_ADMIN' || role.name === 'SUPER_ADMIN',
     );
     if (!hasAdminRole) {
       throw new UnauthorizedException('Access denied. Admin role required.');
     }
 
     const permissions =
-      user.roles?.flatMap((role) => role.permissions.map((p) => p.action + ':' + p.subject)) || [];
+      user.roles?.flatMap((role) =>
+        role.permissions.map((p) => p.action + ':' + p.subject),
+      ) || [];
     const payload = {
       sub: user.id,
       email: user.email,
@@ -96,7 +99,9 @@ export class AuthService {
     await this.userRepository.save(user);
 
     const permissions =
-      user.roles?.flatMap((role) => role.permissions.map((p) => p.action + ':' + p.subject)) || [];
+      user.roles?.flatMap((role) =>
+        role.permissions.map((p) => p.action + ':' + p.subject),
+      ) || [];
     const payload = {
       sub: user.id,
       email: user.email,
@@ -155,7 +160,9 @@ export class AuthService {
       }
 
       const permissions =
-        user.roles?.flatMap((role) => role.permissions.map((p) => p.action + ':' + p.subject)) || [];
+        user.roles?.flatMap((role) =>
+          role.permissions.map((p) => p.action + ':' + p.subject),
+        ) || [];
       const newPayload = {
         sub: user.id,
         email: user.email,

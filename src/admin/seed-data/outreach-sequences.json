@@ -1,0 +1,161 @@
+{
+  "outreachSequences": [
+    {
+      "signalName": "Enterprise Tech Conference Signal",
+      "organizationName": "TechReach Solutions",
+      "sequence": {
+        "name": "Conference Sponsor Outreach Sequence",
+        "objective": "sponsor_outreach",
+        "discovery_prompt": "Research the company's recent conference sponsorships, product launches, and marketing initiatives to personalize outreach",
+        "outreach_context": "We help conference sponsors maximize their ROI through AI-powered attendee engagement and lead qualification. Our platform has helped similar companies increase qualified leads by 3x while reducing CAC by 40%.",
+        "template_variables": {
+          "company_value_prop": "AI-powered lead qualification",
+          "success_metric": "3x increase in qualified leads",
+          "cost_benefit": "40% reduction in CAC",
+          "similar_company": "TechCorp",
+          "calendar_link": "https://calendly.com/techreach/conference-roi-demo"
+        },
+        "status": "active",
+        "steps": [
+          {
+            "applies_to_stage": "new",
+            "channel": "linkedin_conn",
+            "channel_strategy": "Connect with personalized note about their conference presence",
+            "use_ai_generation": true,
+            "message_length": "short",
+            "day_offset": 0,
+            "subject_template": null,
+            "body_template": "Hi {{first_name}}, I noticed {{company_name}} is sponsoring {{event_name}}. We help sponsors like you maximize conference ROI through AI-powered attendee engagement. Would love to connect and share some insights from similar events.",
+            "max_retries": 2
+          },
+          {
+            "applies_to_stage": "contacted",
+            "channel": "email",
+            "channel_strategy": "Follow up with value-driven email showcasing ROI metrics",
+            "use_ai_generation": true,
+            "message_length": "medium",
+            "day_offset": 3,
+            "subject_template": "{{company_name}}'s upcoming presence at {{event_name}} - maximize your ROI",
+            "body_template": "Hi {{first_name}},\n\nI wanted to follow up on my LinkedIn message about {{event_name}}.\n\nWe recently helped {{similar_company}} achieve:\n- 3x more qualified leads\n- 85% faster lead follow-up\n- 40% reduction in CAC\n\nGiven {{company_name}}'s investment in {{event_name}}, I thought you might be interested in similar results.\n\nWould you be open to a brief 15-minute call next week to discuss how we can help maximize your conference ROI?\n\nBest regards,\n{{sender_name}}",
+            "max_retries": 3
+          },
+          {
+            "applies_to_stage": "engaged",
+            "channel": "email",
+            "channel_strategy": "Send case study with meeting request",
+            "use_ai_generation": false,
+            "message_length": "medium",
+            "day_offset": 7,
+            "subject_template": "Case Study: How {{similar_company}} achieved 3x ROI at tech conferences",
+            "body_template": "Hi {{first_name}},\n\nI wanted to share a quick case study that might be relevant for {{company_name}}'s upcoming conference strategy.\n\n{{similar_company}} used our platform at their last 3 conferences and saw:\n- 287% increase in qualified leads\n- 73% reduction in lead response time\n- $45,000 saved in manual lead qualification\n\nI'd love to show you exactly how they did it. Are you available for a 20-minute screen share this week?\n\nHere's my calendar: {{calendar_link}}\n\nLooking forward to connecting!\n\n{{sender_name}}",
+            "max_retries": 2
+          },
+          {
+            "applies_to_stage": "engaged",
+            "channel": "linkedin_msg",
+            "channel_strategy": "LinkedIn message with urgency for upcoming event",
+            "use_ai_generation": true,
+            "message_length": "short",
+            "day_offset": 10,
+            "subject_template": null,
+            "body_template": "Hi {{first_name}}, with {{event_name}} just weeks away, I wanted to make sure you have everything you need to maximize your sponsorship ROI. We've helped 20+ sponsors at similar events. Quick call this week?",
+            "max_retries": 1
+          }
+        ]
+      }
+    },
+    {
+      "signalName": "Series B Funding Signal",
+      "organizationName": "TechReach Solutions",
+      "sequence": {
+        "name": "Series B Funded Companies Outreach",
+        "objective": "meeting_booking",
+        "discovery_prompt": "Research the company's recent funding announcement, growth plans, and technology stack expansion needs",
+        "outreach_context": "Congratulate them on their Series B funding and offer to help them scale their infrastructure efficiently as they grow.",
+        "template_variables": {
+          "funding_congrats": "Congratulations on your recent Series B!",
+          "growth_support": "scale efficiently with your new resources",
+          "calendar_link": "https://calendly.com/techreach/growth-strategy"
+        },
+        "status": "active",
+        "steps": [
+          {
+            "applies_to_stage": "new",
+            "channel": "email",
+            "channel_strategy": "Congratulate on funding and offer growth support",
+            "use_ai_generation": true,
+            "message_length": "short",
+            "day_offset": 0,
+            "subject_template": "Congrats on the Series B, {{first_name}} - helping {{company_name}} scale",
+            "body_template": "Hi {{first_name}},\n\nCongratulations on {{company_name}}'s Series B! It's exciting to see your growth trajectory.\n\nAs you scale, we help similar companies optimize their tech infrastructure while reducing costs by 30-40%.\n\nWould you be interested in a brief chat about your scaling plans?\n\nBest,\n{{sender_name}}",
+            "max_retries": 2
+          },
+          {
+            "applies_to_stage": "contacted",
+            "channel": "linkedin_conn",
+            "channel_strategy": "Connect with personalized funding congratulations",
+            "use_ai_generation": true,
+            "message_length": "short",
+            "day_offset": 3,
+            "subject_template": null,
+            "body_template": "Hi {{first_name}}, congratulations on {{company_name}}'s Series B! We specialize in helping funded startups scale their infrastructure efficiently. Would love to connect and share insights from similar growth-stage companies.",
+            "max_retries": 2
+          }
+        ]
+      }
+    },
+    {
+      "signalName": "Cybersecurity Conference Signal",
+      "organizationName": "EventConnect Pro",
+      "sequence": {
+        "name": "Cybersecurity Sponsor Engagement",
+        "objective": "sponsor_outreach",
+        "discovery_prompt": "Research the company's security products, recent vulnerabilities they've addressed, and their target market",
+        "outreach_context": "We help cybersecurity vendors connect with qualified CISOs and security leaders at major conferences, increasing their pipeline by 250% on average.",
+        "template_variables": {
+          "industry_focus": "cybersecurity",
+          "target_audience": "CISOs and security leaders",
+          "success_metric": "250% pipeline increase",
+          "similar_company": "CyberDefense Inc",
+          "calendar_link": "https://calendly.com/eventconnect/security-roi"
+        },
+        "status": "active",
+        "steps": [
+          {
+            "applies_to_stage": "new",
+            "channel": "linkedin_conn",
+            "channel_strategy": "Connect mentioning their security focus",
+            "use_ai_generation": true,
+            "message_length": "short",
+            "day_offset": 0,
+            "subject_template": null,
+            "body_template": "Hi {{first_name}}, I see {{company_name}} is actively participating in security conferences. We specialize in helping security vendors maximize their conference ROI by connecting with qualified CISOs. Would love to share some insights.",
+            "max_retries": 2
+          },
+          {
+            "applies_to_stage": "contacted",
+            "channel": "email",
+            "channel_strategy": "Share security conference ROI data",
+            "use_ai_generation": true,
+            "message_length": "medium",
+            "day_offset": 4,
+            "subject_template": "{{company_name}} - Maximize your presence at {{event_name}}",
+            "body_template": "Hi {{first_name}},\n\nFollowing up on my LinkedIn message about security conference optimization.\n\nWe recently helped a security vendor at RSA Conference:\n- Connect with 127 qualified CISOs\n- Generate 43 enterprise opportunities\n- Achieve 12x ROI on their sponsorship\n\nWith {{company_name}}'s upcoming presence at security events, I thought you might find value in our approach.\n\n15 minutes to explore how we can help?\n\nBest regards,\n{{sender_name}}",
+            "max_retries": 3
+          },
+          {
+            "applies_to_stage": "engaged",
+            "channel": "email",
+            "channel_strategy": "Send security-specific case study",
+            "use_ai_generation": false,
+            "message_length": "long",
+            "day_offset": 8,
+            "subject_template": "How {{similar_company}} generated 43 enterprise deals at RSA",
+            "body_template": "Hi {{first_name}},\n\nI wanted to share a detailed case study that's particularly relevant for {{company_name}}.\n\n{{similar_company}} faced similar challenges:\n- High conference costs with unclear ROI\n- Difficulty reaching decision-makers\n- Inefficient lead qualification process\n\nUsing our platform at RSA Conference, they:\n- Pre-qualified 300+ attendees before the event\n- Scheduled 47 CISO meetings\n- Generated 43 enterprise opportunities\n- Closed $2.3M in new business within 90 days\n\nThe key was our AI-powered attendee matching system that identifies and engages your ideal customers before, during, and after the event.\n\nWould you like to see exactly how this could work for {{company_name}} at {{event_name}}?\n\nHere's my calendar for a quick demo: {{calendar_link}}\n\nBest,\n{{sender_name}}",
+            "max_retries": 2
+          }
+        ]
+      }
+    }
+  ]
+}

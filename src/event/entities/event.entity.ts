@@ -8,10 +8,10 @@ import {
   JoinColumn,
   OneToMany,
 } from 'typeorm';
-import { Venue } from '@geography/entities/venue.entity';
-import { City } from '@geography/entities/city.entity';
+import { Venue } from '../../geography/entities/venue.entity';
+import { City } from '../../geography/entities/city.entity';
 import { EventCandidate } from './event-candidate.entity';
-import { Job } from '@jobs/entities/job.entity';
+import { Job } from '../../jobs/entities/job.entity';
 import { EventSponsor } from './event-sponsor.entity';
 import { Signal } from '../../signal/entities/signal.entity';
 
