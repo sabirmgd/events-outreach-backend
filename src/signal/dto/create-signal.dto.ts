@@ -9,6 +9,7 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { SignalType, SignalFrequency } from '../entities/signal.entity';
+import { CreateOutreachSequenceWithStepsDto } from '../../outreach/dto/create-outreach-sequence-with-steps.dto';
 
 class DateRangeDto {
   @IsString()
@@ -80,6 +81,11 @@ export class CreateSignalDto {
   @ValidateNested()
   @Type(() => ScheduleDto)
   schedule?: ScheduleDto;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => CreateOutreachSequenceWithStepsDto)
+  outreachSequence?: CreateOutreachSequenceWithStepsDto;
 
   @IsUUID()
   @IsOptional()

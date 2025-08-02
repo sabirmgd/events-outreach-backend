@@ -4,11 +4,13 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, Connection } from 'typeorm';
 import { Signal, SignalStatus } from './entities/signal.entity';
 import { CreateSignalDto } from './dto/create-signal.dto';
 import { UpdateSignalDto } from './dto/update-signal.dto';
 import { FindSignalsDto } from './dto/find-signals.dto';
+import { OutreachSequence } from '../outreach/entities/outreach-sequence.entity';
+import { OutreachStepTemplate } from '../outreach/entities/outreach-step-template.entity';
 
 interface ExecutionResults {
   eventsDiscovered?: number;
@@ -22,29 +24,63 @@ export class SignalService {
   constructor(
     @InjectRepository(Signal)
     private signalRepository: Repository<Signal>,
+    private connection: Connection,
   ) {}
 
-  async create(
+  async createWithSequence(
     createSignalDto: CreateSignalDto,
     userId: string,
     organizationId: string,
   ): Promise<Signal> {
-    const signal = this.signalRepository.create({
-      ...createSignalDto,
-      createdById: userId,
-      organization: { id: organizationId },
-      stats: {
-        totalExecutions: 0,
-        totalEventsFound: 0,
-        totalCompaniesIdentified: 0,
-        totalContactsDiscovered: 0,
-        totalMessagesSent: 0,
-        totalResponses: 0,
-        totalMeetingsBooked: 0,
-      },
-    });
+    const { outreachSequence, ...signalData } = createSignalDto;
 
-    return await this.signalRepository.save(signal);
+    const queryRunner = this.connection.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      const signalEntity = this.signalRepository.create({
+        ...signalData,
+        createdById: userId,
+        organization: { id: organizationId },
+        stats: {
+          totalExecutions: 0,
+          totalEventsFound: 0,
+          totalCompaniesIdentified: 0,
+          totalContactsDiscovered: 0,
+          totalMessagesSent: 0,
+          totalResponses: 0,
+          totalMeetingsBooked: 0,
+        },
+      });
+      const savedSignal = await queryRunner.manager.save(signalEntity);
+
+      if (outreachSequence) {
+        const sequenceEntity = queryRunner.manager.create(OutreachSequence, {
+          ...outreachSequence,
+          signal: savedSignal,
+        });
+        const savedSequence = await queryRunner.manager.save(sequenceEntity);
+
+        if (outreachSequence.steps && outreachSequence.steps.length > 0) {
+          const stepEntities = outreachSequence.steps.map((stepDto) =>
+            queryRunner.manager.create(OutreachStepTemplate, {
+              ...stepDto,
+              sequence: savedSequence,
+            }),
+          );
+          await queryRunner.manager.save(stepEntities);
+        }
+      }
+
+      await queryRunner.commitTransaction();
+      return this.findOne(savedSignal.id); // Re-fetch to get all relations
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+      throw err;
+    } finally {
+      await queryRunner.release();
+    }
   }
 
   async findAll(
@@ -74,14 +110,12 @@ export class SignalService {
       );
     }
 
-    // Apply sorting
     const sortField = query.sort?.startsWith('-')
       ? query.sort.substring(1)
       : query.sort || 'createdAt';
     const sortOrder = query.sort?.startsWith('-') ? 'DESC' : 'ASC';
     queryBuilder.orderBy(`signal.${sortField}`, sortOrder);
 
-    // Apply pagination
     const page = query.page || 1;
     const limit = query.limit || 20;
     queryBuilder.skip((page - 1) * limit).take(limit);
@@ -94,7 +128,12 @@ export class SignalService {
   async findOne(id: string): Promise<Signal> {
     const signal = await this.signalRepository.findOne({
       where: { id },
-      relations: ['createdBy', 'organization'],
+      relations: [
+        'createdBy',
+        'organization',
+        'outreachSequences',
+        'outreachSequences.steps',
+      ],
     });
 
     if (!signal) {
@@ -106,9 +145,7 @@ export class SignalService {
 
   async update(id: string, updateSignalDto: UpdateSignalDto): Promise<Signal> {
     const signal = await this.findOne(id);
-
     Object.assign(signal, updateSignalDto);
-
     return await this.signalRepository.save(signal);
   }
 
@@ -166,11 +203,7 @@ export class SignalService {
   }
 
   async getExecutionData(id: string): Promise<any> {
-    // Get all events, companies, and contacts created by this signal
     const signal = await this.findOne(id);
-
-    // For now, return the aggregated stats
-    // In a real implementation, this would query the actual event, company, and contact tables
     return {
       events: [],
       companies: [],

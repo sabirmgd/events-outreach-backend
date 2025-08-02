@@ -42,7 +42,7 @@ export class SignalController {
     if (!req.user.organizationId) {
       throw new ForbiddenException('User is not part of an organization.');
     }
-    return this.signalService.create(
+    return this.signalService.createWithSequence(
       createSignalDto,
       req.user.sub,
       req.user.organizationId,
