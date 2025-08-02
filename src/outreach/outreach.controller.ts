@@ -17,11 +17,16 @@ import { UpdateOutreachSequenceDto } from './dto/update-outreach-sequence.dto';
 import { CreateOutreachStepTemplateDto } from './dto/create-outreach-step-template.dto';
 import { UpdateOutreachStepTemplateDto } from './dto/update-outreach-step-template.dto';
 import { GenerateMessagePreviewDto } from './dto/generate-message-preview.dto';
+import { InitiateSequenceDto } from './dto/initiate-sequence.dto';
+import { SchedulingService } from './scheduling.service';
 
 @Controller('outreach')
 @UseGuards(JwtAuthGuard)
 export class OutreachController {
-  constructor(private readonly outreachService: OutreachService) {}
+  constructor(
+    private readonly outreachService: OutreachService,
+    private readonly schedulingService: SchedulingService,
+  ) {}
 
   // --- Global Template Library Access (Read-Only) ---
 
@@ -133,5 +138,31 @@ export class OutreachController {
     // TODO: Implement reply handling
     console.log('Incoming reply:', payload);
     return { status: 'received' };
+  }
+
+  // --- Testing Endpoints ---
+
+  @Post('test/initiate-sequence')
+  async initiateSequenceTest(@Body() dto: InitiateSequenceDto) {
+    return this.outreachService.initiateSequenceForPersons(dto);
+  }
+
+  @Delete('test/scheduled-actions')
+  async deleteAllScheduledActions() {
+    return this.outreachService.deleteAllScheduledActions();
+  }
+
+  @Get('test/scheduled-actions')
+  async getScheduledActions(@Query('organizationId') organizationId?: string) {
+    return this.outreachService.getScheduledActions(organizationId);
+  }
+
+  @Post('test/process-immediately/:organizationId')
+  async processImmediately(@Param('organizationId') organizationId: string) {
+    // Force the cron job to run immediately for testing
+    await this.schedulingService.enqueueDueActions();
+    return {
+      message: 'Processing initiated for organization ' + organizationId,
+    };
   }
 }

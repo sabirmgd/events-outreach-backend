@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Job as BullMQJob } from 'bullmq';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, MoreThan } from 'typeorm';
+import { Repository, MoreThan, MoreThanOrEqual } from 'typeorm';
 import { ScheduledAction } from '../entities/scheduled-action.entity';
 import { ScheduledActionStatus } from '../enums/scheduled-action-status.enum';
 import { ConversationAutomationStatus } from '../enums/conversation-automation-status.enum';
@@ -210,7 +210,7 @@ export class ActionProcessor {
     const nextStep = await this.stepTemplateRepository.findOne({
       where: {
         sequence: { id: conversation.sequence.id },
-        day_offset: MoreThan(currentStepDayOffset),
+        day_offset: MoreThanOrEqual(currentStepDayOffset),
       },
       order: {
         day_offset: 'ASC',

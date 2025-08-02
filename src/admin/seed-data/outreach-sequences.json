@@ -19,7 +19,7 @@
         "steps": [
           {
             "applies_to_stage": "new",
-            "channel": "linkedin_conn",
+            "channel": "email",
             "channel_strategy": "Connect with personalized note about their conference presence",
             "use_ai_generation": true,
             "message_length": "short",
@@ -34,7 +34,7 @@
             "channel_strategy": "Follow up with value-driven email showcasing ROI metrics",
             "use_ai_generation": true,
             "message_length": "medium",
-            "day_offset": 3,
+            "day_offset": 0,
             "subject_template": "{{company_name}}'s upcoming presence at {{event_name}} - maximize your ROI",
             "body_template": "Hi {{first_name}},\n\nI wanted to follow up on my LinkedIn message about {{event_name}}.\n\nWe recently helped {{similar_company}} achieve:\n- 3x more qualified leads\n- 85% faster lead follow-up\n- 40% reduction in CAC\n\nGiven {{company_name}}'s investment in {{event_name}}, I thought you might be interested in similar results.\n\nWould you be open to a brief 15-minute call next week to discuss how we can help maximize your conference ROI?\n\nBest regards,\n{{sender_name}}",
             "max_retries": 3

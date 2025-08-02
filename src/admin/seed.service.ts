@@ -34,6 +34,7 @@ import { ConversationStage } from '../outreach/enums/conversation-stage.enum';
 import { ConversationAutomationStatus } from '../outreach/enums/conversation-automation-status.enum';
 import { ProspectTemperature } from '../outreach/enums/prospect-temperature.enum';
 import { Venue } from '../geography/entities/venue.entity';
+import { EmailSender } from '../organization/entities/email-sender.entity';
 
 // Contact and channel interfaces
 interface SeedContactChannel {
@@ -136,7 +137,7 @@ interface SeedSignal {
   description: string;
   type: SignalType;
   status: string;
-  configuration: any;
+  configuration: Record<string, unknown>;
   schedule: {
     frequency: SignalFrequency;
     time?: string;
@@ -162,6 +163,14 @@ interface SeedOrganization {
     email: string;
     password: string;
   };
+}
+
+// Email Sender interfaces
+interface SeedEmailSender {
+  from_name: string;
+  from_email: string;
+  sendgrid_key: string | null;
+  daily_limit: number;
 }
 
 // File-specific interfaces
@@ -206,6 +215,13 @@ interface OutreachSequencesData {
   }>;
 }
 
+interface EmailSendersData {
+  emailSenders: Array<{
+    organizationName: string;
+    senders: SeedEmailSender[];
+  }>;
+}
+
 @Injectable()
 export class SeedService implements OnModuleInit {
   private readonly logger = new Logger(SeedService.name);
@@ -247,6 +263,8 @@ export class SeedService implements OnModuleInit {
     private readonly messageRepository: Repository<Message>,
     @InjectRepository(Venue)
     private readonly venueRepository: Repository<Venue>,
+    @InjectRepository(EmailSender)
+    private readonly emailSenderRepository: Repository<EmailSender>,
     private readonly configService: ConfigService,
   ) {}
 
@@ -291,6 +309,26 @@ export class SeedService implements OnModuleInit {
       const org = await this.seedOrganizationWithAdmin(orgData);
       organizations.set(org.organization.name, org.organization);
       adminUsers.set(org.organization.name, org.admin);
+    }
+
+    // 1.5. Seed Email Senders
+    const emailSendersData = this.loadDataFile<EmailSendersData>(
+      path.join(seedDataDir, 'email-senders.json'),
+    );
+    if (emailSendersData) {
+      for (const orgSenders of emailSendersData.emailSenders) {
+        const organization = organizations.get(orgSenders.organizationName);
+        if (!organization) {
+          this.logger.warn(
+            `Organization ${orgSenders.organizationName} not found. Skipping email senders.`,
+          );
+          continue;
+        }
+
+        for (const senderData of orgSenders.senders) {
+          await this.seedEmailSender(senderData, organization);
+        }
+      }
     }
 
     // 2. Seed Signals
@@ -441,19 +479,11 @@ export class SeedService implements OnModuleInit {
         continue;
       }
 
-      const sequence = await this.seedOutreachSequence(
-        signalOutreach.sequence,
-        signal,
-      );
+      await this.seedOutreachSequence(signalOutreach.sequence, signal);
 
       // Create sample conversations for some personas
       if (signal.name === 'Enterprise Tech Conference Signal') {
-        const johnSmith = await this.personRepository.findOne({
-          where: {
-            linkedin_url: 'https://www.linkedin.com/in/sharanjm/',
-            full_name: 'John Smith',
-          },
-        });
+        // Sample conversation logic can be added here if needed
       }
     }
   }
@@ -629,6 +659,16 @@ export class SeedService implements OnModuleInit {
     });
     if (!person) {
       this.logger.log(`Creating person: ${contactData.full_name}`);
+
+      // Extract email from contact channels
+      const emailChannel = contactData.contact_channels?.find(
+        (channel) => channel.type === 'email',
+      );
+      const email = emailChannel?.value;
+
+      // Determine timezone based on location
+      const timezone = this.getTimezoneFromLocation(contactData.location_text);
+
       person = this.personRepository.create({
         full_name: contactData.full_name,
         first_name: contactData.first_name,
@@ -638,6 +678,8 @@ export class SeedService implements OnModuleInit {
         current_title: contactData.current_title,
         location_text: contactData.location_text,
         source_confidence: contactData.source_confidence,
+        email,
+        timezone,
         organization,
       });
       await this.personRepository.save(person);
@@ -1029,5 +1071,97 @@ export class SeedService implements OnModuleInit {
         this.logger.log(`Created SUPER_ADMIN user: ${superAdminEmail}`);
       }
     }
+  }
+
+  private async seedEmailSender(
+    senderData: SeedEmailSender,
+    organization: Organization,
+  ): Promise<EmailSender> {
+    let emailSender = await this.emailSenderRepository.findOne({
+      where: {
+        from_email: senderData.from_email,
+        organization: { id: organization.id },
+      },
+    });
+
+    if (!emailSender) {
+      this.logger.log(
+        `Creating email sender: ${senderData.from_email} for ${organization.name}`,
+      );
+      emailSender = this.emailSenderRepository.create({
+        from_name: senderData.from_name,
+        from_email: senderData.from_email,
+        sendgrid_key: senderData.sendgrid_key || undefined,
+        daily_limit: senderData.daily_limit,
+        organization,
+      });
+      await this.emailSenderRepository.save(emailSender);
+    }
+
+    return emailSender;
+  }
+
+  private getTimezoneFromLocation(location: string): string {
+    if (!location) return 'America/New_York'; // Default timezone
+
+    const locationLower = location.toLowerCase();
+
+    // Map common US locations to timezones
+    if (
+      locationLower.includes('san francisco') ||
+      locationLower.includes('los angeles') ||
+      locationLower.includes('seattle') ||
+      locationLower.includes('california') ||
+      locationLower.includes(', ca')
+    ) {
+      return 'America/Los_Angeles';
+    }
+
+    if (
+      locationLower.includes('new york') ||
+      locationLower.includes('boston') ||
+      locationLower.includes('washington') ||
+      locationLower.includes(', ny') ||
+      locationLower.includes(', ma') ||
+      locationLower.includes(', dc')
+    ) {
+      return 'America/New_York';
+    }
+
+    if (locationLower.includes('chicago') || locationLower.includes(', il')) {
+      return 'America/Chicago';
+    }
+
+    if (locationLower.includes('denver') || locationLower.includes(', co')) {
+      return 'America/Denver';
+    }
+
+    if (
+      locationLower.includes('austin') ||
+      locationLower.includes('dallas') ||
+      locationLower.includes('houston') ||
+      locationLower.includes(', tx')
+    ) {
+      return 'America/Chicago';
+    }
+
+    if (locationLower.includes('phoenix') || locationLower.includes(', az')) {
+      return 'America/Phoenix';
+    }
+
+    if (locationLower.includes('atlanta') || locationLower.includes(', ga')) {
+      return 'America/New_York';
+    }
+
+    if (locationLower.includes('miami') || locationLower.includes(', fl')) {
+      return 'America/New_York';
+    }
+
+    if (locationLower.includes('las vegas') || locationLower.includes(', nv')) {
+      return 'America/Los_Angeles';
+    }
+
+    // Default to Eastern Time for any unmatched US locations
+    return 'America/New_York';
   }
 }

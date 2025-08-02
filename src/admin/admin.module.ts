@@ -24,6 +24,7 @@ import { Conversation } from '../outreach/entities/conversation.entity';
 import { Message } from '../outreach/entities/message.entity';
 import { Venue } from '../geography/entities/venue.entity';
 import { ContactChannel } from '../persona/entities/contact-channel.entity';
+import { EmailSender } from '../organization/entities/email-sender.entity';
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import { ContactChannel } from '../persona/entities/contact-channel.entity';
       Message,
       Venue,
       ContactChannel,
+      EmailSender,
     ]),
   ],
   controllers: [AdminController],

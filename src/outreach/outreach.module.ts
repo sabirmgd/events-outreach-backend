@@ -22,6 +22,7 @@ import { ActionProcessor } from './processors/action.processor';
 import { ClientsModule } from '../clients/clients.module';
 import { EmailSender } from '../organization/entities/email-sender.entity';
 import { OrganizationModule } from '../organization/organization.module';
+import { Person } from '../persona/entities/person.entity';
 
 @Module({
   imports: [
@@ -31,7 +32,8 @@ import { OrganizationModule } from '../organization/organization.module';
       Conversation,
       Message,
       ScheduledAction,
-      EmailSender, // Add EmailSender since ActionProcessor needs it
+      EmailSender,
+      Person,
     ]),
     ConfigModule,
     PersonaModule,

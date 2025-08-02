@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, IsNull } from 'typeorm';
+import { Repository, IsNull, In } from 'typeorm';
 import { PersonaService } from '../persona/persona.service';
 import { CreateOutreachSequenceDto } from './dto/create-outreach-sequence.dto';
 import { UpdateOutreachSequenceDto } from './dto/update-outreach-sequence.dto';
@@ -19,6 +19,13 @@ import { ConfigService } from '@nestjs/config';
 import { GenerateMessagePreviewDto } from './dto/generate-message-preview.dto';
 import { SignalService } from '../signal/signal.service';
 import { ChatAnthropic } from '@langchain/anthropic';
+import { ScheduledAction } from './entities/scheduled-action.entity';
+import { ScheduledActionStatus } from './enums/scheduled-action-status.enum';
+import { ScheduledActionChannel } from './enums/scheduled-action-channel.enum';
+import { ScheduledActionType } from './enums/scheduled-action-type.enum';
+import { InitiateSequenceDto } from './dto/initiate-sequence.dto';
+import { EmailSender } from '../organization/entities/email-sender.entity';
+import { Person } from '../persona/entities/person.entity';
 
 @Injectable()
 export class OutreachService {
@@ -33,6 +40,12 @@ export class OutreachService {
     private readonly conversationRepository: Repository<Conversation>,
     @InjectRepository(Message)
     private readonly messageRepository: Repository<Message>,
+    @InjectRepository(ScheduledAction)
+    private readonly scheduledActionRepository: Repository<ScheduledAction>,
+    @InjectRepository(EmailSender)
+    private readonly emailSenderRepository: Repository<EmailSender>,
+    @InjectRepository(Person)
+    private readonly personRepository: Repository<Person>,
     private readonly personaService: PersonaService,
     private readonly eventService: EventService,
     private readonly signalService: SignalService,
@@ -420,4 +433,153 @@ ${
   }
 
   // TODO: Add runAutomatedFollowUp() method
+
+  // Testing methods for queue system
+  async initiateSequenceForPersons(dto: InitiateSequenceDto) {
+    const { signalId, sequenceId, personIds, sendImmediately } = dto;
+
+    // Get the sequence and its steps
+    const sequence = await this.outreachSequenceRepository.findOne({
+      where: { id: parseInt(sequenceId) },
+      relations: ['steps'],
+    });
+
+    if (!sequence) {
+      throw new NotFoundException('Sequence not found');
+    }
+
+    // Get the signal
+    const signal = await this.signalService.findOne(signalId);
+    if (!signal) {
+      throw new NotFoundException('Signal not found');
+    }
+
+    // Get persons
+    const persons = await this.personRepository.find({
+      where: { id: In(personIds) },
+      relations: ['organization'],
+    });
+
+    if (persons.length === 0) {
+      throw new NotFoundException('No persons found');
+    }
+
+    // Get the first email sender for the organization
+    const emailSender = await this.emailSenderRepository.findOne({
+      where: { organization: { id: persons[0].organization.id } },
+    });
+
+    if (!emailSender) {
+      throw new NotFoundException(
+        'No email sender configured for organization',
+      );
+    }
+
+    const createdConversations = [];
+
+    // Create conversations and scheduled actions for each person
+    for (const person of persons) {
+      // Create or get existing conversation
+      let conversation = await this.conversationRepository.findOne({
+        where: {
+          person: { id: person.id },
+          sequence: { id: sequence.id },
+        },
+        relations: ['person', 'sequence'],
+      });
+
+      if (!conversation) {
+        conversation = this.conversationRepository.create({
+          person,
+          sequence,
+          stage: ConversationStage.NEW,
+          automation_status: ConversationAutomationStatus.ACTIVE,
+          current_step: sequence.steps[0],
+        });
+        await this.conversationRepository.save(conversation);
+      }
+
+      // Get the first step
+      const firstStep = sequence.steps.sort(
+        (a, b) => a.day_offset - b.day_offset,
+      )[0];
+
+      if (firstStep) {
+        // Create scheduled action
+        const scheduledAt = sendImmediately ? new Date() : new Date();
+        if (!sendImmediately) {
+          scheduledAt.setDate(scheduledAt.getDate() + firstStep.day_offset);
+        }
+
+        const scheduledAction = this.scheduledActionRepository.create({
+          conversation,
+          step: firstStep,
+          channel:
+            firstStep.channel === 'email'
+              ? ScheduledActionChannel.EMAIL
+              : ScheduledActionChannel.LINKEDIN,
+          action_type: ScheduledActionType.SEND_MESSAGE,
+          scheduled_at: scheduledAt,
+          status: ScheduledActionStatus.PENDING,
+          email_sender: firstStep.channel === 'email' ? emailSender : undefined,
+        });
+
+        await this.scheduledActionRepository.save(scheduledAction);
+      }
+
+      createdConversations.push(conversation);
+    }
+
+    return {
+      message: `Created ${createdConversations.length} conversations with scheduled actions`,
+      conversations: createdConversations.map((c) => ({
+        id: c.id,
+        personName: c.person.full_name,
+        stage: c.stage,
+        status: c.automation_status,
+      })),
+    };
+  }
+
+  async deleteAllScheduledActions() {
+    const result = await this.scheduledActionRepository.delete({
+      status: In([
+        ScheduledActionStatus.PENDING,
+        ScheduledActionStatus.PROCESSING,
+      ]),
+    });
+
+    return {
+      message: `Deleted ${result.affected} scheduled actions`,
+    };
+  }
+
+  async getScheduledActions(organizationId?: string) {
+    const query = this.scheduledActionRepository
+      .createQueryBuilder('action')
+      .leftJoinAndSelect('action.conversation', 'conversation')
+      .leftJoinAndSelect('conversation.person', 'person')
+      .leftJoinAndSelect('person.organization', 'organization')
+      .leftJoinAndSelect('action.step', 'step')
+      .leftJoinAndSelect('action.email_sender', 'email_sender')
+      .orderBy('action.scheduled_at', 'ASC');
+
+    if (organizationId) {
+      query.where('organization.id = :organizationId', { organizationId });
+    }
+
+    const actions = await query.getMany();
+
+    return actions.map((action) => ({
+      id: action.id,
+      status: action.status,
+      channel: action.channel,
+      scheduledAt: action.scheduled_at,
+      personName: action.conversation.person.full_name,
+      personEmail: action.conversation.person.email,
+      organizationId: action.conversation.person.organization?.id,
+      stepSubject: action.step.subject_template,
+      bullJobId: action.bull_job_id,
+    }));
+  }
 }

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Organization } from './entities/organization.entity';
@@ -6,6 +6,8 @@ import { Team } from './entities/team.entity';
 import { UserService } from '../user/user.service';
 import { CreateOrganizationDto } from './dto/create-organization.dto';
 import { User } from '../user/entities/user.entity';
+import { EmailSender } from './entities/email-sender.entity';
+import { CreateEmailSenderDto } from './dto/create-email-sender.dto';
 
 @Injectable()
 export class OrganizationService {
@@ -14,6 +16,8 @@ export class OrganizationService {
     private readonly organizationRepository: Repository<Organization>,
     @InjectRepository(Team)
     private readonly teamRepository: Repository<Team>,
+    @InjectRepository(EmailSender)
+    private readonly emailSenderRepository: Repository<EmailSender>,
     private readonly userService: UserService,
   ) {}
 
@@ -42,5 +46,37 @@ export class OrganizationService {
     return organization;
   }
 
-  // TODO: Add other methods like findOne, addUserToTeam, etc.
+  async findOne(id: string): Promise<Organization> {
+    const organization = await this.organizationRepository.findOne({
+      where: { id },
+      relations: ['teams', 'emailSenders'],
+    });
+
+    if (!organization) {
+      throw new NotFoundException('Organization not found');
+    }
+
+    return organization;
+  }
+
+  async createEmailSender(
+    organizationId: string,
+    createEmailSenderDto: CreateEmailSenderDto,
+  ): Promise<EmailSender> {
+    const organization = await this.findOne(organizationId);
+
+    const emailSender = this.emailSenderRepository.create({
+      ...createEmailSenderDto,
+      organization,
+      daily_limit: createEmailSenderDto.daily_limit || 400,
+    });
+
+    return this.emailSenderRepository.save(emailSender);
+  }
+
+  async getEmailSenders(organizationId: string): Promise<EmailSender[]> {
+    return this.emailSenderRepository.find({
+      where: { organization: { id: organizationId } },
+    });
+  }
 }

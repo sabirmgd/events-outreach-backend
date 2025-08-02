@@ -1,0 +1,38 @@
+{
+  "emailSenders": [
+    {
+      "organizationName": "TechReach Solutions",
+      "senders": [
+        {
+          "from_name": "Mark from TechReach",
+          "from_email": "mark@lumif.ai",
+          "sendgrid_key": null,
+          "daily_limit": 500
+        },
+        {
+          "from_name": "Sharan from TechReach",
+          "from_email": "sharan@lumif.ai",
+          "sendgrid_key": null,
+          "daily_limit": 500
+        }
+      ]
+    },
+    {
+      "organizationName": "EventConnect Pro",
+      "senders": [
+        {
+          "from_name": "Mark from EventConnect",
+          "from_email": "mark@lumif.ai",
+          "sendgrid_key": null,
+          "daily_limit": 400
+        },
+        {
+          "from_name": "Sharan from EventConnect",
+          "from_email": "sharan@lumif.ai",
+          "sendgrid_key": null,
+          "daily_limit": 400
+        }
+      ]
+    }
+  ]
+}
