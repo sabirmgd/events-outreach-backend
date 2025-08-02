@@ -7,6 +7,7 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CaslGuard } from '../auth/guards/casl.guard';
@@ -29,13 +30,16 @@ export class AdminOutreachController {
   }
 
   @Get('sequences')
-  findAllSequences() {
-    return this.outreachService.findAll();
+  findAllSequences(@Query('signalId') signalId?: string) {
+    return this.outreachService.findAll(signalId);
   }
 
   @Get('sequences/:id')
-  findOneSequence(@Param('id') id: number) {
-    return this.outreachService.findOne(id);
+  findOneSequence(
+    @Param('id') id: number,
+    @Query('signalId') signalId?: string,
+  ) {
+    return this.outreachService.findOne(id, signalId);
   }
 
   @Patch('sequences/:id')
@@ -47,8 +51,11 @@ export class AdminOutreachController {
   }
 
   @Delete('sequences/:id')
-  removeSequence(@Param('id') id: number) {
-    return this.outreachService.remove(id);
+  removeSequence(
+    @Param('id') id: number,
+    @Query('signalId') signalId?: string,
+  ) {
+    return this.outreachService.remove(id, signalId);
   }
 
   // --- Global Step Management ---
@@ -57,32 +64,37 @@ export class AdminOutreachController {
   createStep(
     @Param('sequenceId') sequenceId: number,
     @Body() createOutreachStepTemplateDto: CreateOutreachStepTemplateDto,
+    @Query('signalId') signalId?: string,
   ) {
-    return this.outreachService.createStep({
-      ...createOutreachStepTemplateDto,
-      sequence_id: sequenceId,
-    });
+    return this.outreachService.createStep(
+      {
+        ...createOutreachStepTemplateDto,
+        sequence_id: sequenceId,
+      },
+      signalId,
+    );
   }
 
   @Get('steps/:id')
-  findOneStep(@Param('id') id: number) {
-    return this.outreachService.findOneStep(id);
+  findOneStep(@Param('id') id: number, @Query('signalId') signalId?: string) {
+    return this.outreachService.findOneStep(id, signalId);
   }
 
   @Patch('steps/:id')
   updateStep(
     @Param('id') id: number,
     @Body() updateOutreachStepTemplateDto: UpdateOutreachStepTemplateDto,
+    @Query('signalId') signalId?: string,
   ) {
     return this.outreachService.updateStep(
       id,
       updateOutreachStepTemplateDto,
-      undefined,
+      signalId,
     );
   }
 
   @Delete('steps/:id')
-  removeStep(@Param('id') id: number) {
-    return this.outreachService.removeStep(id, undefined);
+  removeStep(@Param('id') id: number, @Query('signalId') signalId?: string) {
+    return this.outreachService.removeStep(id, signalId);
   }
 }

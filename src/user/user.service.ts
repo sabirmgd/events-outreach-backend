@@ -43,8 +43,8 @@ export class UserService {
     }
 
     const savedUser = await this.userRepository.save(user);
-    
-    // Return user with invitation token for response  
+
+    // Return user with invitation token for response
     return { ...savedUser, invitation_token: token } as any;
   }
 
@@ -52,7 +52,9 @@ export class UserService {
     // Since we don't store invitation tokens in the User entity,
     // you would need to implement a separate invitation tracking system
     // For now, throwing an error
-    throw new NotFoundException('Invitation system needs to be implemented separately');
+    throw new NotFoundException(
+      'Invitation system needs to be implemented separately',
+    );
   }
 
   findAll(): Promise<User[]> {
@@ -72,7 +74,15 @@ export class UserService {
   async findOneByEmail(email: string): Promise<User | null> {
     return this.userRepository.findOne({
       where: { email },
-      select: ['id', 'email', 'name', 'password', 'is_active', 'created_at', 'updated_at'],
+      select: [
+        'id',
+        'email',
+        'name',
+        'password',
+        'is_active',
+        'created_at',
+        'updated_at',
+      ],
     });
   }
 

@@ -15,6 +15,7 @@ import { EventCandidate } from './entities/event-candidate.entity';
 import { EventSponsor } from './entities/event-sponsor.entity';
 import { JobsService } from '@jobs/jobs.service';
 import { JobType } from '@jobs/enums/job-type.enum';
+import { Signal } from '../signal/entities/signal.entity';
 
 @Injectable()
 export class EventService {
@@ -61,7 +62,9 @@ export class EventService {
 
     const prompt = [
       'SYSTEM: You are EventScout-GPT. Return strictly valid JSON that matches the schema.',
-      `Task: Find all upcoming ${topic} events in ${cities.join(', ')} within ${dateRange}. Today's date is ${new Date().toDateString()}.`,
+      `Task: Find all upcoming ${topic} events in ${cities.join(
+        ', ',
+      )} within ${dateRange}. Today's date is ${new Date().toDateString()}.`,
       'Exclude already-known events listed below.',
       existingEventNames.join('\n') || 'None',
       'Return JSON exactly like this example, including the endDate if available (it can be null):',
@@ -86,21 +89,29 @@ export class EventService {
   }
 
   async create(createEventDto: CreateEventDto): Promise<Event> {
-    const { venue_id, city_id, created_from_candidate_id, ...rest } =
+    const { venue_id, city_id, created_from_candidate_id, signalId, ...rest } =
       createEventDto;
 
-    const event = this.eventRepository.create(rest);
+    const eventData: Partial<Event> = {
+      ...rest,
+      start_dt: new Date(rest.start_dt),
+      end_dt: rest.end_dt ? new Date(rest.end_dt) : undefined,
+    };
 
     if (venue_id) {
-      event.venue = await this.geographyService.findOneVenue(venue_id);
+      eventData.venue = await this.geographyService.findOneVenue(venue_id);
     }
-    event.city = await this.geographyService.findOneCity(city_id);
+    eventData.city = await this.geographyService.findOneCity(city_id);
     if (created_from_candidate_id) {
-      event.created_from_candidate = await this.findOneCandidate(
+      eventData.created_from_candidate = await this.findOneCandidate(
         created_from_candidate_id,
       );
     }
+    if (signalId) {
+      eventData.signal = { id: signalId } as Signal;
+    }
 
+    const event = this.eventRepository.create(eventData);
     return this.eventRepository.save(event);
   }
 
@@ -110,6 +121,7 @@ export class EventService {
         'venue',
         'city',
         'created_from_candidate',
+        'signal',
       ],
     });
   }
@@ -119,7 +131,7 @@ export class EventService {
       where: { id },
       relations: relations.length
         ? relations
-        : ['venue', 'city', 'created_from_candidate'],
+        : ['venue', 'city', 'created_from_candidate', 'signal'],
     });
     if (!event) {
       throw new NotFoundException(`Event with ID ${id} not found`);
@@ -128,23 +140,33 @@ export class EventService {
   }
 
   async update(id: number, updateEventDto: UpdateEventDto): Promise<Event> {
-    const { venue_id, city_id, created_from_candidate_id, ...rest } =
+    const { venue_id, city_id, created_from_candidate_id, signalId, ...rest } =
       updateEventDto;
     const event = await this.findOne(id);
 
-    Object.assign(event, rest);
+    const updatedEventData: Partial<Event> = {
+      ...rest,
+      start_dt: rest.start_dt ? new Date(rest.start_dt) : undefined,
+      end_dt: rest.end_dt ? new Date(rest.end_dt) : undefined,
+    };
 
     if (venue_id) {
-      event.venue = await this.geographyService.findOneVenue(venue_id);
+      updatedEventData.venue =
+        await this.geographyService.findOneVenue(venue_id);
     }
     if (city_id) {
-      event.city = await this.geographyService.findOneCity(city_id);
+      updatedEventData.city = await this.geographyService.findOneCity(city_id);
     }
     if (created_from_candidate_id) {
-      event.created_from_candidate = await this.findOneCandidate(
+      updatedEventData.created_from_candidate = await this.findOneCandidate(
         created_from_candidate_id,
       );
     }
+    if (signalId) {
+      updatedEventData.signal = { id: signalId } as Signal;
+    }
+
+    Object.assign(event, updatedEventData);
 
     return this.eventRepository.save(event);
   }

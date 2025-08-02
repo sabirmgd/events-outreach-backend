@@ -15,10 +15,11 @@ import { User } from '../user/entities/user.entity';
 import { UserModule } from '../user/user.module';
 import { Organization } from '../organization/entities/organization.entity';
 import { Event } from '../event/entities/event.entity';
+import { Signal } from '../signal/entities/signal.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, Organization, Event]),
+    TypeOrmModule.forFeature([User, Organization, Event, Signal]),
     UserModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],

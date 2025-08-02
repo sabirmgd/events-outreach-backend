@@ -16,6 +16,7 @@ import { Company } from '../company/entities/company.entity';
 import { EventSponsor } from '../event/entities/event-sponsor.entity';
 import { Person } from '../persona/entities/person.entity';
 import { CompanyPersonRole } from '../persona/entities/company-person-role.entity';
+import { Signal } from '../signal/entities/signal.entity';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { CompanyPersonRole } from '../persona/entities/company-person-role.entit
       EventSponsor,
       Person,
       CompanyPersonRole,
+      Signal,
     ]),
   ],
   controllers: [AdminController],

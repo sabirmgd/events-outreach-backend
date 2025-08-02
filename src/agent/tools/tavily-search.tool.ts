@@ -1,5 +1,5 @@
-import { Tool } from "@langchain/core/tools";
-import { CallbackManagerForToolRun } from "@langchain/core/callbacks/manager";
+import { Tool } from '@langchain/core/tools';
+import { CallbackManagerForToolRun } from '@langchain/core/callbacks/manager';
 
 interface TavilySearchResult {
   url: string;
@@ -18,37 +18,40 @@ interface TavilyAPIResponse {
 }
 
 export class TavilySearchTool extends Tool {
-  name = "tavily_search_results_json";
-  description = "A search engine optimized for comprehensive, accurate, and trusted results. Useful for when you need to answer questions about current events. Input should be a search query.";
-  
+  name = 'tavily_search_results_json';
+  description =
+    'A search engine optimized for comprehensive, accurate, and trusted results. Useful for when you need to answer questions about current events. Input should be a search query.';
+
   private apiKey: string;
   private maxResults: number;
   private apiUrl: string;
   private includeRawContent: boolean;
-  private searchDepth: "basic" | "advanced";
+  private searchDepth: 'basic' | 'advanced';
 
   constructor(fields?: {
     apiKey?: string;
     maxResults?: number;
     apiUrl?: string;
     includeRawContent?: boolean;
-    searchDepth?: "basic" | "advanced";
+    searchDepth?: 'basic' | 'advanced';
   }) {
     super();
-    this.apiKey = fields?.apiKey || process.env.TAVILY_API_KEY || "";
+    this.apiKey = fields?.apiKey || process.env.TAVILY_API_KEY || '';
     this.maxResults = fields?.maxResults || 5;
-    this.apiUrl = fields?.apiUrl || "https://api.tavily.com/search";
+    this.apiUrl = fields?.apiUrl || 'https://api.tavily.com/search';
     this.includeRawContent = fields?.includeRawContent ?? false;
-    this.searchDepth = fields?.searchDepth || "advanced";
+    this.searchDepth = fields?.searchDepth || 'advanced';
 
     if (!this.apiKey) {
-      throw new Error("Tavily API key is required. Please set TAVILY_API_KEY environment variable or pass it in the constructor.");
+      throw new Error(
+        'Tavily API key is required. Please set TAVILY_API_KEY environment variable or pass it in the constructor.',
+      );
     }
   }
 
   protected async _call(
     input: string,
-    _runManager?: CallbackManagerForToolRun
+    _runManager?: CallbackManagerForToolRun,
   ): Promise<string> {
     try {
       const requestBody = {
@@ -58,13 +61,13 @@ export class TavilySearchTool extends Tool {
         include_answer: true,
         include_raw_content: this.includeRawContent,
         search_depth: this.searchDepth,
-        include_images: true
+        include_images: true,
       };
 
       const response = await fetch(this.apiUrl, {
-        method: "POST",
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify(requestBody),
       });
@@ -74,10 +77,10 @@ export class TavilySearchTool extends Tool {
         throw new Error(`Tavily API error: ${response.status} - ${errorText}`);
       }
 
-      const data = await response.json() as TavilyAPIResponse;
+      const data = (await response.json()) as TavilyAPIResponse;
       return JSON.stringify(data);
     } catch (error) {
-      console.error("[TavilySearchTool] Error calling Tavily API:", error);
+      console.error('[TavilySearchTool] Error calling Tavily API:', error);
       throw error;
     }
   }

@@ -39,7 +39,7 @@ export class AgentExecutionGateway
 
   @WebSocketServer()
   server: Server;
-  
+
   sendProgress(executionId: string, progress: any) {
     this.server?.emit(`execution:${executionId}:progress`, progress);
     // Also emit to namespace for backward compatibility
@@ -53,8 +53,8 @@ export class AgentExecutionGateway
   sendStatus(executionId: string, status: string) {
     this.server?.emit(`execution:${executionId}:status`, { status });
     // Also emit to namespace for backward compatibility
-    this.server?.to(`execution:${executionId}`).emit('agentStatus', { 
-      executionId, 
+    this.server?.to(`execution:${executionId}`).emit('agentStatus', {
+      executionId,
       status,
       timestamp: new Date(),
     });
@@ -112,9 +112,15 @@ export class AgentExecutionGateway
     this.logger.log(
       `[WebSocket] ✅ Client connected to agent execution gateway: ${client.id}`,
     );
-    this.logger.log(`[WebSocket] Client ${client.id} - User Agent: ${client.handshake.headers['user-agent']}`);
-    this.logger.debug(`[WebSocket] Client ${client.id} - Origin: ${client.handshake.headers.origin}`);
-    this.logger.debug(`[WebSocket] Total connected clients: ${this.server?.engine?.clientsCount || 'unknown'}`);
+    this.logger.log(
+      `[WebSocket] Client ${client.id} - User Agent: ${client.handshake.headers['user-agent']}`,
+    );
+    this.logger.debug(
+      `[WebSocket] Client ${client.id} - Origin: ${client.handshake.headers.origin}`,
+    );
+    this.logger.debug(
+      `[WebSocket] Total connected clients: ${this.server?.engine?.clientsCount || 'unknown'}`,
+    );
     this.clientExecutions.set(client.id, new Set());
   }
 
@@ -122,8 +128,12 @@ export class AgentExecutionGateway
     this.logger.log(
       `[WebSocket] Client disconnected from agent execution gateway: ${client.id}`,
     );
-    this.logger.debug(`[WebSocket] Disconnect reason: ${client.disconnected ? 'Client initiated' : 'Server initiated'}`);
-    this.logger.debug(`[WebSocket] Remaining connected clients: ${(this.server?.engine?.clientsCount || 1) - 1}`);
+    this.logger.debug(
+      `[WebSocket] Disconnect reason: ${client.disconnected ? 'Client initiated' : 'Server initiated'}`,
+    );
+    this.logger.debug(
+      `[WebSocket] Remaining connected clients: ${(this.server?.engine?.clientsCount || 1) - 1}`,
+    );
 
     // Clean up client tracking
     const executions = this.clientExecutions.get(client.id);
@@ -259,21 +269,22 @@ export class AgentExecutionGateway
   ) {
     this.logger.log(`Cancel request for execution ${data.executionId}`);
     // Trigger cancellation via the service
-    this.agentExecutionService.cancelExecution(data.executionId)
+    this.agentExecutionService
+      .cancelExecution(data.executionId)
       .then((result) => {
         if (result) {
           client.emit('cancel:acknowledged', { executionId: data.executionId });
         } else {
-          client.emit('cancel:failed', { 
+          client.emit('cancel:failed', {
             executionId: data.executionId,
-            error: 'Execution not found or already completed'
+            error: 'Execution not found or already completed',
           });
         }
       })
       .catch((error) => {
-        client.emit('cancel:failed', { 
+        client.emit('cancel:failed', {
           executionId: data.executionId,
-          error: error.message
+          error: error.message,
         });
       });
   }
@@ -281,7 +292,8 @@ export class AgentExecutionGateway
   @SubscribeMessage('startTestPrompt')
   async handleStartTestPrompt(
     @ConnectedSocket() client: Socket,
-    @MessageBody() payload: { testId: string; prompt: string; variables: Record<string, any> },
+    @MessageBody()
+    payload: { testId: string; prompt: string; variables: Record<string, any> },
   ) {
     const testId = payload.testId || `${client.id}-${Date.now()}`;
     this.activeTests.set(testId, true);
@@ -289,12 +301,20 @@ export class AgentExecutionGateway
     try {
       this.logger.log(`[TestPrompt] Starting test prompt execution: ${testId}`);
       this.logger.debug(`[TestPrompt] Client: ${client.id}`);
-      this.logger.debug(`[TestPrompt] Prompt length: ${payload.prompt?.length || 0} characters`);
-      this.logger.debug(`[TestPrompt] Variables provided: ${Object.keys(payload.variables || {}).length}`);
-      this.logger.debug(`[TestPrompt] Variable keys: [${Object.keys(payload.variables || {}).join(', ')}]`);
-      
+      this.logger.debug(
+        `[TestPrompt] Prompt length: ${payload.prompt?.length || 0} characters`,
+      );
+      this.logger.debug(
+        `[TestPrompt] Variables provided: ${Object.keys(payload.variables || {}).length}`,
+      );
+      this.logger.debug(
+        `[TestPrompt] Variable keys: [${Object.keys(payload.variables || {}).join(', ')}]`,
+      );
+
       // Send initial progress
-      this.logger.debug(`[TestPrompt] ${testId} - Sending initial progress to client`);
+      this.logger.debug(
+        `[TestPrompt] ${testId} - Sending initial progress to client`,
+      );
       client.emit('testPromptProgress', {
         testId,
         message: 'Initializing test prompt execution...',
@@ -302,12 +322,20 @@ export class AgentExecutionGateway
       });
 
       // Detect variables if not provided
-      this.logger.debug(`[TestPrompt] ${testId} - Detecting variables in prompt`);
-      const detectedVariables = this.testPromptService.detectVariables(payload.prompt);
-      this.logger.debug(`[TestPrompt] ${testId} - Detected variables: [${detectedVariables.join(', ')}]`);
-      
+      this.logger.debug(
+        `[TestPrompt] ${testId} - Detecting variables in prompt`,
+      );
+      const detectedVariables = this.testPromptService.detectVariables(
+        payload.prompt,
+      );
+      this.logger.debug(
+        `[TestPrompt] ${testId} - Detected variables: [${detectedVariables.join(', ')}]`,
+      );
+
       if (detectedVariables.length > 0 && !payload.variables) {
-        this.logger.debug(`[TestPrompt] ${testId} - No variables provided, sending detected variables to client`);
+        this.logger.debug(
+          `[TestPrompt] ${testId} - No variables provided, sending detected variables to client`,
+        );
         client.emit('testPromptProgress', {
           testId,
           message: `Detected ${detectedVariables.length} variables: ${detectedVariables.join(', ')}`,
@@ -316,7 +344,9 @@ export class AgentExecutionGateway
       }
 
       // Update progress
-      this.logger.debug(`[TestPrompt] ${testId} - Sending execution progress to client`);
+      this.logger.debug(
+        `[TestPrompt] ${testId} - Sending execution progress to client`,
+      );
       client.emit('testPromptProgress', {
         testId,
         message: 'Executing prompt...',
@@ -324,18 +354,24 @@ export class AgentExecutionGateway
       });
 
       // Execute the test prompt
-      this.logger.log(`[TestPrompt] ${testId} - Calling TestPromptService.executeTestPrompt()`);
+      this.logger.log(
+        `[TestPrompt] ${testId} - Calling TestPromptService.executeTestPrompt()`,
+      );
       const startTime = Date.now();
       const result = await this.testPromptService.executeTestPrompt(
         payload.prompt,
         payload.variables || {},
       );
       const executionTime = Date.now() - startTime;
-      this.logger.log(`[TestPrompt] ${testId} - Execution completed in ${executionTime}ms`);
+      this.logger.log(
+        `[TestPrompt] ${testId} - Execution completed in ${executionTime}ms`,
+      );
 
       // Check if test was stopped
       if (!this.activeTests.has(testId)) {
-        this.logger.warn(`[TestPrompt] ${testId} - Test was cancelled during execution`);
+        this.logger.warn(
+          `[TestPrompt] ${testId} - Test was cancelled during execution`,
+        );
         client.emit('testPromptComplete', {
           testId,
           result: { output: 'Test cancelled by user' },
@@ -347,7 +383,9 @@ export class AgentExecutionGateway
 
       // Send completion
       if (result.error) {
-        this.logger.error(`[TestPrompt] ${testId} - Execution failed: ${result.error}`);
+        this.logger.error(
+          `[TestPrompt] ${testId} - Execution failed: ${result.error}`,
+        );
         this.logger.debug(`[TestPrompt] ${testId} - Sending error to client`);
         client.emit('testPromptError', {
           testId,
@@ -355,9 +393,13 @@ export class AgentExecutionGateway
         });
       } else {
         this.logger.log(`[TestPrompt] ${testId} - Execution successful`);
-        this.logger.debug(`[TestPrompt] ${testId} - Output length: ${result.output?.length || 0} characters`);
-        this.logger.debug(`[TestPrompt] ${testId} - Metrics: ${JSON.stringify(result.metrics)}`);
-        
+        this.logger.debug(
+          `[TestPrompt] ${testId} - Output length: ${result.output?.length || 0} characters`,
+        );
+        this.logger.debug(
+          `[TestPrompt] ${testId} - Metrics: ${JSON.stringify(result.metrics)}`,
+        );
+
         // Send the full output as a chunk first
         this.logger.debug(`[TestPrompt] ${testId} - Sending chunk to client`);
         client.emit('testPromptChunk', {
@@ -365,7 +407,9 @@ export class AgentExecutionGateway
           chunk: result.output,
         });
 
-        this.logger.debug(`[TestPrompt] ${testId} - Sending completion to client`);
+        this.logger.debug(
+          `[TestPrompt] ${testId} - Sending completion to client`,
+        );
         client.emit('testPromptComplete', {
           testId,
           result: result.output,
@@ -376,7 +420,8 @@ export class AgentExecutionGateway
       this.logger.error(`Error in test prompt ${testId}:`, error);
       client.emit('testPromptError', {
         testId,
-        message: error instanceof Error ? error.message : 'Unknown error occurred',
+        message:
+          error instanceof Error ? error.message : 'Unknown error occurred',
       });
     } finally {
       this.activeTests.delete(testId);
@@ -389,11 +434,11 @@ export class AgentExecutionGateway
     @MessageBody() data: { testId: string },
   ) {
     const { testId } = data;
-    
+
     if (this.activeTests.has(testId)) {
       this.logger.log(`Stopping test prompt: ${testId}`);
       this.activeTests.delete(testId);
-      
+
       client.emit('testPromptComplete', {
         testId,
         result: { output: 'Test cancelled by user' },
@@ -416,7 +461,7 @@ export class AgentExecutionGateway
   //   this.server
   //     .to(`execution:${result.executionId}`)
   //     .emit('agentCompleted', result);
-  // 
+  //
   //   // Clean up tracking
   //   this.cleanupExecution(result.executionId);
   // }
@@ -426,7 +471,7 @@ export class AgentExecutionGateway
   //   this.server
   //     .to(`execution:${result.executionId}`)
   //     .emit('agentFailed', result);
-  // 
+  //
   //   // Clean up tracking
   //   this.cleanupExecution(result.executionId);
   // }
@@ -436,7 +481,7 @@ export class AgentExecutionGateway
   //   this.server
   //     .to(`execution:${data.executionId}`)
   //     .emit('agentCancelled', data);
-  // 
+  //
   //   // Clean up tracking
   //   this.cleanupExecution(data.executionId);
   // }

@@ -146,7 +146,7 @@ export class InitialSchema1750000000000 implements MigrationInterface {
       )
     `);
 
-    // Create companies table  
+    // Create companies table
     await queryRunner.query(`
       CREATE TABLE "companies" (
         "id" SERIAL NOT NULL,
@@ -226,34 +226,38 @@ export class InitialSchema1750000000000 implements MigrationInterface {
     await queryRunner.query(`DROP INDEX "IDX_persons_companyId"`);
     await queryRunner.query(`DROP INDEX "IDX_persons_email"`);
     await queryRunner.query(`DROP TABLE "persons"`);
-    
+
     await queryRunner.query(`DROP TABLE "events"`);
-    
+
     await queryRunner.query(`DROP INDEX "IDX_companies_domain"`);
     await queryRunner.query(`DROP INDEX "IDX_companies_name"`);
     await queryRunner.query(`DROP TABLE "companies"`);
-    
+
     await queryRunner.query(`DROP TABLE "venues"`);
-    
+
     await queryRunner.query(`DROP INDEX "IDX_cities_country_code"`);
     await queryRunner.query(`DROP INDEX "IDX_cities_name"`);
     await queryRunner.query(`DROP TABLE "cities"`);
-    
+
     await queryRunner.query(`DROP INDEX "IDX_user_roles_roles_roles"`);
     await queryRunner.query(`DROP INDEX "IDX_user_roles_roles_user"`);
     await queryRunner.query(`DROP TABLE "user_roles_roles"`);
-    
+
     await queryRunner.query(`DROP TABLE "user"`);
-    
-    await queryRunner.query(`DROP INDEX "IDX_roles_permissions_permissions_permissions"`);
-    await queryRunner.query(`DROP INDEX "IDX_roles_permissions_permissions_roles"`);
+
+    await queryRunner.query(
+      `DROP INDEX "IDX_roles_permissions_permissions_permissions"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "IDX_roles_permissions_permissions_roles"`,
+    );
     await queryRunner.query(`DROP TABLE "roles_permissions_permissions"`);
-    
+
     await queryRunner.query(`DROP TABLE "roles"`);
     await queryRunner.query(`DROP TABLE "permissions"`);
     await queryRunner.query(`DROP TYPE "permissions_subject_enum"`);
     await queryRunner.query(`DROP TYPE "permissions_action_enum"`);
-    
+
     await queryRunner.query(`DROP TABLE "teams"`);
     await queryRunner.query(`DROP TABLE "organizations"`);
   }

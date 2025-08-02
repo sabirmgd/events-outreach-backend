@@ -9,8 +9,8 @@ import {
 } from 'typeorm';
 import { Event } from '../../event/entities/event.entity';
 import { Conversation } from './conversation.entity';
-import { Organization } from '../../organization/entities/organization.entity';
 import { OutreachStepTemplate } from './outreach-step-template.entity';
+import { Signal } from '../../signal/entities/signal.entity';
 
 @Entity('outreach_sequences')
 export class OutreachSequence {
@@ -26,8 +26,10 @@ export class OutreachSequence {
   @ManyToOne(() => Event, { nullable: true })
   event: Event;
 
-  @ManyToOne(() => Organization, { nullable: true })
-  organization: Organization;
+  @ManyToOne(() => Signal, (signal) => signal.outreachSequences, {
+    nullable: true,
+  })
+  signal: Signal;
 
   @OneToMany(() => Conversation, (conversation) => conversation.sequence)
   conversations: Conversation[];

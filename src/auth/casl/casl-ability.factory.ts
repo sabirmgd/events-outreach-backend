@@ -12,12 +12,18 @@ import { Event } from '../../event/entities/event.entity';
 import { JwtPayload } from '../dto/jwt-payload.dto';
 import { Prompt } from '../../prompts/entities/prompt.entity';
 import { Action } from '../enums/action.enum';
+import { Signal } from '../../signal/entities/signal.entity';
 
 export type Subjects =
-  | InferSubjects<typeof User | typeof Organization | typeof Event | typeof Prompt>
+  | InferSubjects<
+      | typeof User
+      | typeof Organization
+      | typeof Event
+      | typeof Prompt
+      | typeof Signal
+    >
   | 'Company'
   | 'Persona'
-  | 'Signal'
   | 'Agent'
   | 'all';
 
@@ -46,10 +52,12 @@ export class CaslAbilityFactory {
 
         case 'ADMIN':
           if (orgId) {
-            can(Action.Manage, Event, { organization: { id: orgId } } as any);
+            can(Action.Manage, Event, {
+              signal: { organizationId: orgId },
+            } as any);
             can(Action.Manage, 'Company');
             can(Action.Manage, 'Persona');
-            can(Action.Manage, 'Signal');
+            can(Action.Manage, Signal, { organizationId: orgId } as any);
             can(Action.Manage, Prompt, { organization: { id: orgId } } as any);
             can(Action.Manage, 'Agent');
             can(Action.Read, Organization, { id: orgId });
@@ -59,10 +67,12 @@ export class CaslAbilityFactory {
           break;
         case 'USER':
           if (orgId) {
-            can(Action.Manage, Event, { organization: { id: orgId } } as any);
+            can(Action.Manage, Event, {
+              signal: { organizationId: orgId },
+            } as any);
             can(Action.Manage, 'Company');
             can(Action.Manage, 'Persona');
-            can(Action.Manage, 'Signal');
+            can(Action.Manage, Signal, { organizationId: orgId } as any);
             can(Action.Read, Prompt, { organization: { id: orgId } } as any);
             can(Action.Read, 'Agent');
             can([Action.Create, Action.Update], 'Agent');

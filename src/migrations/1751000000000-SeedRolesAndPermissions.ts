@@ -1,6 +1,8 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class SeedRolesAndPermissions1751000000000 implements MigrationInterface {
+export class SeedRolesAndPermissions1751000000000
+  implements MigrationInterface
+{
   name = 'SeedRolesAndPermissions1751000000000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -16,9 +18,18 @@ export class SeedRolesAndPermissions1751000000000 implements MigrationInterface 
     `);
 
     // Create permissions
-    const subjects = ['User', 'Organization', 'Event', 'Company', 'Person', 'OutreachSequence', 'Conversation', 'Meeting'];
+    const subjects = [
+      'User',
+      'Organization',
+      'Event',
+      'Company',
+      'Person',
+      'OutreachSequence',
+      'Conversation',
+      'Meeting',
+    ];
     const actions = ['CREATE', 'READ', 'UPDATE', 'DELETE'];
-    
+
     const permissions = [];
     for (const subject of subjects) {
       for (const action of actions) {
@@ -50,13 +61,15 @@ export class SeedRolesAndPermissions1751000000000 implements MigrationInterface 
     }
 
     // USER gets limited permissions
-    const userPermissions = permissions.filter(p => 
-      (p.subject === 'Event' && ['CREATE', 'READ', 'UPDATE'].includes(p.action)) ||
-      (p.subject === 'Company' && ['READ'].includes(p.action)) ||
-      (p.subject === 'Person' && ['READ'].includes(p.action)) ||
-      (p.subject === 'Organization' && p.action === 'READ')
+    const userPermissions = permissions.filter(
+      (p) =>
+        (p.subject === 'Event' &&
+          ['CREATE', 'READ', 'UPDATE'].includes(p.action)) ||
+        (p.subject === 'Company' && ['READ'].includes(p.action)) ||
+        (p.subject === 'Person' && ['READ'].includes(p.action)) ||
+        (p.subject === 'Organization' && p.action === 'READ'),
     );
-    
+
     for (const permission of userPermissions) {
       await queryRunner.query(`
         INSERT INTO "roles_permissions_permissions" ("rolesId", "permissionsId")
@@ -68,10 +81,10 @@ export class SeedRolesAndPermissions1751000000000 implements MigrationInterface 
   public async down(queryRunner: QueryRunner): Promise<void> {
     // Remove all role-permission mappings
     await queryRunner.query(`DELETE FROM "roles_permissions_permissions"`);
-    
+
     // Remove all permissions
     await queryRunner.query(`DELETE FROM "permissions"`);
-    
+
     // Remove all roles
     await queryRunner.query(`DELETE FROM "roles"`);
   }

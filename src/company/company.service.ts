@@ -89,7 +89,9 @@ export class CompanyService {
   async findByWebsite(website: string): Promise<Company | null> {
     return await this.companyRepository
       .createQueryBuilder('company')
-      .where('LOWER(company.website) = LOWER(:website)', { website: website.trim() })
+      .where('LOWER(company.website) = LOWER(:website)', {
+        website: website.trim(),
+      })
       .getOne();
   }
 }

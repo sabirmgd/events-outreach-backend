@@ -18,10 +18,6 @@ import { PeopleEnricherAgent } from './outreach-list-agents/people-enricher.agen
     // CompanyEnrichmentAgent,
     // EventDiscoveryExampleAgent,
   ],
-  exports: [
-    EventDiscoveryAgent,
-    SponsorExtractionAgent,
-    PeopleEnricherAgent,
-  ],
+  exports: [EventDiscoveryAgent, SponsorExtractionAgent, PeopleEnricherAgent],
 })
 export class AgentsModule {}

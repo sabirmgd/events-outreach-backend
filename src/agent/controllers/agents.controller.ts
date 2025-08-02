@@ -12,7 +12,12 @@ import {
   HttpStatus,
   Logger,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiParam, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiParam,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { AgentRegistryService } from '../services/agent-registry.service';
 import { AgentExecutionService } from '../services/agent-execution.service';
 import { ExecuteAgentDto } from '../dto/execute-agent.dto';
@@ -110,7 +115,7 @@ export class AgentsController {
   async getExecution(@Param('executionId') executionId: string) {
     try {
       const execution = await this.agentExecution.getExecution(executionId);
-      
+
       if (!execution) {
         throw new HttpException(
           `Execution ${executionId} not found`,
@@ -121,11 +126,11 @@ export class AgentsController {
       return { execution };
     } catch (error) {
       this.logger.error(`Error getting execution ${executionId}:`, error);
-      
+
       if (error instanceof HttpException) {
         throw error;
       }
-      
+
       throw new HttpException(
         'Failed to get execution details',
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -140,7 +145,7 @@ export class AgentsController {
   async cancelExecution(@Param('executionId') executionId: string) {
     try {
       const result = await this.agentExecution.cancelExecution(executionId);
-      
+
       if (!result) {
         throw new HttpException(
           `Execution ${executionId} not found or already completed`,
@@ -156,11 +161,11 @@ export class AgentsController {
       };
     } catch (error) {
       this.logger.error(`Error cancelling execution ${executionId}:`, error);
-      
+
       if (error instanceof HttpException) {
         throw error;
       }
-      
+
       throw new HttpException(
         'Failed to cancel execution',
         HttpStatus.INTERNAL_SERVER_ERROR,

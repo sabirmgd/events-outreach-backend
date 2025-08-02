@@ -134,7 +134,6 @@ export class PromptsController {
     return await this.promptsService.publishVersion(id, versionId, publishDto);
   }
 
-
   @Post(':id/versions/:versionId/preview')
   @RequirePermissions(Permission.PROMPTS_READ)
   async previewPrompt(

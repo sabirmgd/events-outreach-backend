@@ -132,7 +132,8 @@ describe('SignalExecutionService', () => {
 
   describe('parseEventResults', () => {
     it('should parse JSON string with events array', () => {
-      const input = '{"reasoning": "Found events", "events": [{"name": "AI Summit"}]}';
+      const input =
+        '{"reasoning": "Found events", "events": [{"name": "AI Summit"}]}';
       const result = service['parseEventResults'](input);
       expect(result).toHaveLength(1);
       expect(result[0].name).toBe('AI Summit');
@@ -161,7 +162,8 @@ describe('SignalExecutionService', () => {
     });
 
     it('should extract JSON from mixed text content', () => {
-      const input = 'Some text before {"reasoning": "test", "events": [{"name": "Event 1"}]} some text after';
+      const input =
+        'Some text before {"reasoning": "test", "events": [{"name": "Event 1"}]} some text after';
       const result = service['parseEventResults'](input);
       expect(result).toHaveLength(1);
       expect(result[0].name).toBe('Event 1');
@@ -265,34 +267,52 @@ Regular text here
 
   describe('extractSeniority', () => {
     it('should identify C-Suite titles', () => {
-      expect(service['extractSeniority']('Chief Executive Officer')).toBe('C-Suite');
+      expect(service['extractSeniority']('Chief Executive Officer')).toBe(
+        'C-Suite',
+      );
       expect(service['extractSeniority']('CEO')).toBe('C-Suite');
-      expect(service['extractSeniority']('Chief Technology Officer')).toBe('C-Suite');
+      expect(service['extractSeniority']('Chief Technology Officer')).toBe(
+        'C-Suite',
+      );
       expect(service['extractSeniority']('CTO')).toBe('C-Suite');
-      expect(service['extractSeniority']('Chief Marketing Officer')).toBe('C-Suite');
+      expect(service['extractSeniority']('Chief Marketing Officer')).toBe(
+        'C-Suite',
+      );
       expect(service['extractSeniority']('CMO')).toBe('C-Suite');
-      expect(service['extractSeniority']('Chief Financial Officer')).toBe('C-Suite');
+      expect(service['extractSeniority']('Chief Financial Officer')).toBe(
+        'C-Suite',
+      );
       expect(service['extractSeniority']('CFO')).toBe('C-Suite');
     });
 
     it('should identify VP level', () => {
       expect(service['extractSeniority']('VP of Sales')).toBe('VP');
-      expect(service['extractSeniority']('Vice President Marketing')).toBe('VP');
+      expect(service['extractSeniority']('Vice President Marketing')).toBe(
+        'VP',
+      );
     });
 
     it('should identify Director level', () => {
-      expect(service['extractSeniority']('Director of Engineering')).toBe('Director');
+      expect(service['extractSeniority']('Director of Engineering')).toBe(
+        'Director',
+      );
       expect(service['extractSeniority']('Head of Product')).toBe('Director');
     });
 
     it('should identify Manager level', () => {
       expect(service['extractSeniority']('Product Manager')).toBe('Manager');
-      expect(service['extractSeniority']('Engineering Manager')).toBe('Manager');
+      expect(service['extractSeniority']('Engineering Manager')).toBe(
+        'Manager',
+      );
     });
 
     it('should default to Individual Contributor', () => {
-      expect(service['extractSeniority']('Software Engineer')).toBe('Individual Contributor');
-      expect(service['extractSeniority']('Sales Representative')).toBe('Individual Contributor');
+      expect(service['extractSeniority']('Software Engineer')).toBe(
+        'Individual Contributor',
+      );
+      expect(service['extractSeniority']('Sales Representative')).toBe(
+        'Individual Contributor',
+      );
     });
 
     it('should be case insensitive', () => {
@@ -304,8 +324,12 @@ Regular text here
   describe('getRoleCategory', () => {
     it('should categorize marketing roles', () => {
       expect(service['getRoleCategory']('VP Marketing')).toBe('marketing');
-      expect(service['getRoleCategory']('Chief Marketing Officer')).toBe('marketing');
-      expect(service['getRoleCategory']('Marketing Director')).toBe('marketing');
+      expect(service['getRoleCategory']('Chief Marketing Officer')).toBe(
+        'marketing',
+      );
+      expect(service['getRoleCategory']('Marketing Director')).toBe(
+        'marketing',
+      );
     });
 
     it('should categorize sales roles', () => {
@@ -315,9 +339,15 @@ Regular text here
     });
 
     it('should categorize partnership roles', () => {
-      expect(service['getRoleCategory']('VP Partnerships')).toBe('partnerships');
-      expect(service['getRoleCategory']('Head of Alliances')).toBe('partnerships');
-      expect(service['getRoleCategory']('Partner Manager')).toBe('partnerships');
+      expect(service['getRoleCategory']('VP Partnerships')).toBe(
+        'partnerships',
+      );
+      expect(service['getRoleCategory']('Head of Alliances')).toBe(
+        'partnerships',
+      );
+      expect(service['getRoleCategory']('Partner Manager')).toBe(
+        'partnerships',
+      );
     });
 
     it('should categorize C-level roles', () => {

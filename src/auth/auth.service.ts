@@ -1,4 +1,8 @@
-import { Injectable, UnauthorizedException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  NotFoundException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -22,50 +26,54 @@ export class AuthService {
 
   async login(loginDto: LoginDto) {
     const { email, password } = loginDto;
-    
-    const user = await this.userRepository.findOne({ 
+
+    const user = await this.userRepository.findOne({
       where: { email, is_active: true },
       select: ['id', 'email', 'password', 'name', 'is_active'],
-      relations: ['roles', 'roles.permissions', 'organization', 'team']
+      relations: ['roles', 'roles.permissions', 'organization', 'team'],
     });
 
-    if (!user || !user.password || !await bcrypt.compare(password, user.password)) {
+    if (
+      !user ||
+      !user.password ||
+      !(await bcrypt.compare(password, user.password))
+    ) {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const hasAdminRole = user.roles?.some(role => 
-      role.name === 'ADMIN' || role.name === 'SUPER_ADMIN'
+    const hasAdminRole = user.roles?.some(
+      (role) => role.name === 'ADMIN' || role.name === 'SUPER_ADMIN',
     );
     if (!hasAdminRole) {
       throw new UnauthorizedException('Access denied. Admin role required.');
     }
 
-    const payload = { 
-      sub: user.id, 
+    const payload = {
+      sub: user.id,
       email: user.email,
-      roles: user.roles?.map(role => role.name) || [],
+      roles: user.roles?.map((role) => role.name) || [],
       organizationId: user.organization?.id || null,
-      teamId: user.team?.id || null
+      teamId: user.team?.id || null,
     };
 
     const tokens = await this.generateTokens(payload);
-    
+
     await this.updateRefreshToken(user.id, tokens.refresh_token);
 
     const { password: userPassword, ...userWithoutPassword } = user;
-    
+
     return {
       ...tokens,
-      user: userWithoutPassword
+      user: userWithoutPassword,
     };
   }
 
   async acceptInvitation(dto: AcceptInvitationDto) {
     const { token, password } = dto;
 
-    const user = await this.userRepository.findOne({ 
+    const user = await this.userRepository.findOne({
       where: { invitationToken: token },
-      relations: ['roles', 'organization', 'team']
+      relations: ['roles', 'organization', 'team'],
     });
 
     if (!user) {
@@ -75,7 +83,7 @@ export class AuthService {
     if (user.invitationExpiresAt && user.invitationExpiresAt < new Date()) {
       throw new UnauthorizedException('Invitation token has expired.');
     }
-    
+
     user.password = await bcrypt.hash(password, 10);
     user.is_active = true;
     user.invitationToken = undefined;
@@ -83,30 +91,30 @@ export class AuthService {
 
     await this.userRepository.save(user);
 
-    const payload = { 
-      sub: user.id, 
+    const payload = {
+      sub: user.id,
       email: user.email,
-      roles: user.roles?.map(role => role.name) || [],
+      roles: user.roles?.map((role) => role.name) || [],
       organizationId: user.organization?.id || null,
-      teamId: user.team?.id || null
+      teamId: user.team?.id || null,
     };
 
     const tokens = await this.generateTokens(payload);
-    
+
     await this.updateRefreshToken(user.id, tokens.refresh_token);
 
     const { password: userPassword, ...userWithoutPassword } = user;
-    
+
     return {
       ...tokens,
-      user: userWithoutPassword
+      user: userWithoutPassword,
     };
   }
 
   async logout(user: any) {
     if (user && user.sub) {
       await this.userRepository.update(user.sub, {
-        refreshToken: undefined
+        refreshToken: undefined,
       });
     }
     return { message: 'Logged out successfully' };
@@ -116,13 +124,13 @@ export class AuthService {
     try {
       const payload = await this.jwtService.verifyAsync(
         refreshDto.refresh_token,
-        { secret: this.configService.get('JWT_REFRESH_SECRET') }
+        { secret: this.configService.get('JWT_REFRESH_SECRET') },
       );
 
       const user = await this.userRepository.findOne({
         where: { id: payload.sub },
         select: ['id', 'email', 'refreshToken'],
-        relations: ['roles', 'organization', 'team']
+        relations: ['roles', 'organization', 'team'],
       });
 
       if (!user || !user.refreshToken) {
@@ -131,19 +139,19 @@ export class AuthService {
 
       const isRefreshTokenValid = await bcrypt.compare(
         refreshDto.refresh_token,
-        user.refreshToken
+        user.refreshToken,
       );
 
       if (!isRefreshTokenValid) {
         throw new UnauthorizedException('Invalid refresh token');
       }
 
-      const newPayload = { 
-        sub: user.id, 
+      const newPayload = {
+        sub: user.id,
         email: user.email,
-        roles: user.roles?.map(role => role.name) || [],
+        roles: user.roles?.map((role) => role.name) || [],
         organizationId: user.organization?.id || null,
-        teamId: user.team?.id || null
+        teamId: user.team?.id || null,
       };
 
       const tokens = await this.generateTokens(newPayload);

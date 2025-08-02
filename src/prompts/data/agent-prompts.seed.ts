@@ -14,7 +14,8 @@ export const agentPrompts: AgentPromptSeed[] = [
   {
     key: 'event-discovery-agent.system',
     name: 'Event Discovery Agent System Prompt',
-    description: 'System prompt for the event discovery agent that searches and extracts structured event information',
+    description:
+      'System prompt for the event discovery agent that searches and extracts structured event information',
     agentNamespace: 'event-discovery',
     promptType: 'system',
     body: `You are an expert event researcher with structured extraction capabilities.
@@ -46,14 +47,15 @@ Return a structured JSON array of events with your reasoning process. The JSON s
 
 Be thorough but return only verified information. It's better to have null fields than incorrect data.`,
     variables: [],
-    tags: ['agent', 'event-discovery', 'system-prompt', 'langchain']
+    tags: ['agent', 'event-discovery', 'system-prompt', 'langchain'],
   },
 
   // Sponsor Extraction Agent Prompts
   {
     key: 'sponsor-extraction-agent.system',
     name: 'Sponsor Extraction Agent System Prompt',
-    description: 'System prompt for the sponsor extraction agent that finds and enriches event sponsors',
+    description:
+      'System prompt for the sponsor extraction agent that finds and enriches event sponsors',
     agentNamespace: 'sponsor-extraction',
     promptType: 'system',
     body: `You are a sponsor data extraction specialist. Your role is to find and extract sponsor information from events.
@@ -82,14 +84,15 @@ For enrichment: Return structured company data with available fields
 
 Always prioritize accuracy over completeness.`,
     variables: [],
-    tags: ['agent', 'sponsor-extraction', 'system-prompt', 'langchain']
+    tags: ['agent', 'sponsor-extraction', 'system-prompt', 'langchain'],
   },
 
   // People Enricher Agent Prompts
   {
     key: 'people-enricher.system',
     name: 'People Enricher System Prompt',
-    description: 'System prompt for the people enricher agent that finds and enriches contact information',
+    description:
+      'System prompt for the people enricher agent that finds and enriches contact information',
     agentNamespace: 'people-enricher',
     promptType: 'system',
     body: `You are a people data enrichment specialist. Find missing contact information and professional details.
@@ -125,7 +128,7 @@ Always prioritize accuracy over completeness.`,
 
 Return structured data in consistent format. Quality over quantity.`,
     variables: [],
-    tags: ['agent', 'people-enricher', 'system-prompt', 'langchain']
+    tags: ['agent', 'people-enricher', 'system-prompt', 'langchain'],
   },
 
   // Additional User Prompts for Agents
@@ -148,7 +151,7 @@ Include events with:
 - Industry focus on {{industries}}
 - Both virtual and in-person formats`,
     variables: ['topic', 'location', 'year', 'minAttendees', 'industries'],
-    tags: ['agent', 'event-discovery', 'search-query', 'template']
+    tags: ['agent', 'event-discovery', 'search-query', 'template'],
   },
 
   {
@@ -171,7 +174,7 @@ Extract the following information:
 
 Focus on verified, current information from official sources.`,
     variables: ['companyName'],
-    tags: ['agent', 'sponsor-extraction', 'enrichment', 'template']
+    tags: ['agent', 'sponsor-extraction', 'enrichment', 'template'],
   },
 
   {
@@ -198,7 +201,7 @@ For each person found, extract:
 
 {{#if companyWebsite}}Check the company website: {{companyWebsite}}{{/if}}`,
     variables: ['companyName', 'industry', 'companyWebsite'],
-    tags: ['agent', 'people-enricher', 'poc-search', 'template']
+    tags: ['agent', 'people-enricher', 'poc-search', 'template'],
   },
 
   // Evaluation Prompts
@@ -218,6 +221,6 @@ For each person found, extract:
 Provide a score for each criterion and an overall quality score.
 Explain any issues or areas for improvement.`,
     variables: [],
-    tags: ['agent', 'event-discovery', 'evaluation', 'quality-check']
-  }
+    tags: ['agent', 'event-discovery', 'evaluation', 'quality-check'],
+  },
 ];

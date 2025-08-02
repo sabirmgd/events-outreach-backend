@@ -19,6 +19,7 @@ import { Action } from '../auth/enums/action.enum';
 import { Subject } from '../auth/enums/subject.enum';
 import { ConfigService } from '@nestjs/config';
 import { ContactChannel } from '../persona/entities/contact-channel.entity';
+import { Signal, SignalType } from '../signal/entities/signal.entity';
 
 interface SeedContact {
   name: string;
@@ -50,6 +51,12 @@ interface SeedEvent {
   sponsors: SeedSponsor[];
 }
 
+interface SeedSignal {
+  name: string;
+  type: SignalType;
+  events: SeedEvent[];
+}
+
 interface SeedOrganization {
   name: string;
   admin: {
@@ -57,7 +64,7 @@ interface SeedOrganization {
     email: string;
     password: string;
   };
-  events: SeedEvent[];
+  signals: SeedSignal[];
 }
 
 interface SeedData {
@@ -91,6 +98,8 @@ export class SeedService implements OnModuleInit {
     private readonly personRepository: Repository<Person>,
     @InjectRepository(CompanyPersonRole)
     private readonly companyPersonRoleRepository: Repository<CompanyPersonRole>,
+    @InjectRepository(Signal)
+    private readonly signalRepository: Repository<Signal>,
     private readonly configService: ConfigService,
   ) {}
 
@@ -128,43 +137,47 @@ export class SeedService implements OnModuleInit {
     for (const orgData of seedData.organizations) {
       const organization = await this.findOrCreateOrganization(orgData.name);
       const team = await this.findOrCreateTeam('General', organization);
-      await this.findOrCreateAdminUser(
+      const adminUser = await this.findOrCreateAdminUser(
         orgData.admin,
         organization,
         team,
         adminRole,
       );
 
-      for (const eventData of orgData.events) {
-        const city = await this.findOrCreateCity(
-          eventData.city.name,
-          eventData.city.country_code,
-        );
-        const event = await this.findOrCreateEvent(
-          eventData,
+      for (const signalData of orgData.signals) {
+        const signal = await this.findOrCreateSignal(
+          signalData,
           organization,
-          city,
+          adminUser,
         );
 
-        for (const sponsorData of eventData.sponsors) {
-          const company = await this.findOrCreateCompany(
-            sponsorData.name,
-            sponsorData.website,
+        for (const eventData of signalData.events) {
+          const city = await this.findOrCreateCity(
+            eventData.city.name,
+            eventData.city.country_code,
           );
-          await this.findOrCreateEventSponsor(event, company);
+          const event = await this.findOrCreateEvent(eventData, signal, city);
 
-          for (const contactData of sponsorData.contacts) {
-            const person = await this.findOrCreatePerson(contactData);
-            await this.findOrCreateContactChannel(
-              person,
-              'email',
-              contactData.email,
+          for (const sponsorData of eventData.sponsors) {
+            const company = await this.findOrCreateCompany(
+              sponsorData.name,
+              sponsorData.website,
             );
-            await this.findOrCreateCompanyPersonRole(
-              person,
-              company,
-              contactData.title,
-            );
+            await this.findOrCreateEventSponsor(event, company);
+
+            for (const contactData of sponsorData.contacts) {
+              const person = await this.findOrCreatePerson(contactData);
+              await this.findOrCreateContactChannel(
+                person,
+                'email',
+                contactData.email,
+              );
+              await this.findOrCreateCompanyPersonRole(
+                person,
+                company,
+                contactData.title,
+              );
+            }
           }
         }
       }
@@ -230,6 +243,8 @@ export class SeedService implements OnModuleInit {
         email: adminData.email,
         password: hashedPassword,
         is_active: true,
+        organization,
+        team,
       });
       user.roles = [role];
       await this.userRepository.save(user);
@@ -252,13 +267,44 @@ export class SeedService implements OnModuleInit {
     return city;
   }
 
+  private async findOrCreateSignal(
+    signalData: SeedSignal,
+    organization: Organization,
+    user: User,
+  ): Promise<Signal> {
+    let signal = await this.signalRepository.findOne({
+      where: { name: signalData.name, organization: { id: organization.id } },
+    });
+    if (!signal) {
+      this.logger.log(`Creating signal: ${signalData.name}`);
+      signal = this.signalRepository.create({
+        name: signalData.name,
+        type: signalData.type,
+        organization,
+        createdById: user.id,
+        configuration: {},
+        stats: {
+          totalExecutions: 0,
+          totalEventsFound: 0,
+          totalCompaniesIdentified: 0,
+          totalContactsDiscovered: 0,
+          totalMessagesSent: 0,
+          totalResponses: 0,
+          totalMeetingsBooked: 0,
+        },
+      });
+      await this.signalRepository.save(signal);
+    }
+    return signal;
+  }
+
   private async findOrCreateEvent(
     eventData: SeedEvent,
-    organization: Organization,
+    signal: Signal,
     city: City,
   ): Promise<Event> {
     let event = await this.eventRepository.findOne({
-      where: { name: eventData.name, organization: { id: organization.id } },
+      where: { name: eventData.name, signal: { id: signal.id } },
     });
     if (!event) {
       this.logger.log(`Creating event: ${eventData.name}`);
@@ -267,7 +313,7 @@ export class SeedService implements OnModuleInit {
         start_dt: new Date(eventData.start_dt),
         end_dt: new Date(eventData.end_dt),
         website_url: eventData.website_url,
-        organization,
+        signal,
         city,
       });
       await this.eventRepository.save(event);

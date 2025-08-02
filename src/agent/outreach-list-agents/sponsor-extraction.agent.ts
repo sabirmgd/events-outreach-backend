@@ -11,13 +11,13 @@ import { Agent, AgentMethod } from '../decorators';
   id: 'sponsor-extraction',
   name: 'Sponsor Extraction Agent',
   description: 'Extracts and enriches sponsor information from events',
-  category: 'extraction'
+  category: 'extraction',
 })
 @Injectable()
 export class SponsorExtractionAgent {
   private readonly logger = new Logger(SponsorExtractionAgent.name);
   private agent: AgentExecutor;
-  
+
   constructor(
     private configService: ConfigService,
     private promptsService: PromptsService,
@@ -40,15 +40,18 @@ export class SponsorExtractionAgent {
 
     let systemPrompt: string;
     try {
-      systemPrompt = await this.promptsService.getPublishedPromptBody('sponsor-extraction-agent.system');
+      systemPrompt = await this.promptsService.getPublishedPromptBody(
+        'sponsor-extraction-agent.system',
+      );
     } catch (error) {
-      systemPrompt = 'You are a search agent. Use the tavily_search_results_json tool to search for information and return the raw results. Do not process or structure the data.';
+      systemPrompt =
+        'You are a search agent. Use the tavily_search_results_json tool to search for information and return the raw results. Do not process or structure the data.';
     }
 
     const prompt = ChatPromptTemplate.fromMessages([
       ['system', systemPrompt],
       ['human', '{input}'],
-      ['placeholder', '{agent_scratchpad}']
+      ['placeholder', '{agent_scratchpad}'],
     ]);
 
     const agent = createToolCallingAgent({ llm, tools, prompt });
@@ -62,34 +65,34 @@ export class SponsorExtractionAgent {
         name: 'eventName',
         type: 'string',
         description: 'Name of the event',
-        required: true
+        required: true,
       },
       {
         name: 'eventWebsite',
         type: 'string',
         description: 'Event website URL',
-        required: false
+        required: false,
       },
       {
         name: 'year',
         type: 'number',
         description: 'Event year',
-        required: true
-      }
-    ]
+        required: true,
+      },
+    ],
   })
   async extractSponsors(
     eventName: string,
     eventWebsite: string,
     year: number,
-    context?: any
+    context?: any,
   ): Promise<any> {
     if (!this.agent) {
       await this.initializeAgent();
     }
 
     const query = `${eventName} ${year} sponsors exhibitors partners companies`;
-    
+
     if (context?.updateProgress) {
       context.updateProgress(30, 'Searching for sponsor information');
     }
@@ -98,9 +101,9 @@ export class SponsorExtractionAgent {
     if (context?.signal?.aborted) {
       throw new Error('Execution cancelled');
     }
-    
+
     const result = await this.agent.invoke({ input: query });
-    
+
     if (context?.updateProgress) {
       context.updateProgress(70, 'Processing sponsor data');
     }
@@ -115,9 +118,9 @@ export class SponsorExtractionAgent {
         name: 'companyName',
         type: 'string',
         description: 'Company name',
-        required: true
-      }
-    ]
+        required: true,
+      },
+    ],
   })
   async enrichSponsor(companyName: string, context?: any): Promise<any> {
     if (!this.agent) {
@@ -125,14 +128,14 @@ export class SponsorExtractionAgent {
     }
 
     const query = `${companyName} company website industry headquarters employees founded`;
-    
+
     // Check for cancellation
     if (context?.signal?.aborted) {
       throw new Error('Execution cancelled');
     }
-    
+
     const result = await this.agent.invoke({ input: query });
-    
+
     return this.parseCompanyInfo(result.output, companyName);
   }
 
@@ -140,13 +143,14 @@ export class SponsorExtractionAgent {
     // Extract company names from search results
     // This is a simplified version - enhance based on actual needs
     const sponsors: string[] = [];
-    
+
     try {
       const data = JSON.parse(output);
       if (data.results) {
         data.results.forEach((result: any) => {
           // Extract company names from content
-          const companyPattern = /(?:sponsors?|exhibitors?|partners?)[\s:]+([A-Z][A-Za-z\s&,]+)/gi;
+          const companyPattern =
+            /(?:sponsors?|exhibitors?|partners?)[\s:]+([A-Z][A-Za-z\s&,]+)/gi;
           const matches = result.content.matchAll(companyPattern);
           for (const match of matches) {
             sponsors.push(match[1].trim());
@@ -156,14 +160,14 @@ export class SponsorExtractionAgent {
     } catch (error) {
       this.logger.error('Error parsing sponsors:', error);
     }
-    
+
     return [...new Set(sponsors)];
   }
 
   private parseCompanyInfo(output: any, companyName: string): any {
     try {
       const data = JSON.parse(output);
-      
+
       return {
         name: companyName,
         website: this.extractWebsite(data),
@@ -199,7 +203,8 @@ export class SponsorExtractionAgent {
 
   private extractHeadquarters(data: any): string | null {
     // Extract headquarters location
-    const hqPattern = /(?:headquarters?|based in|located in)[\s:]+([A-Za-z\s,]+)/i;
+    const hqPattern =
+      /(?:headquarters?|based in|located in)[\s:]+([A-Za-z\s,]+)/i;
     for (const result of data.results || []) {
       const match = result.content.match(hqPattern);
       if (match) return match[1].trim();

@@ -2,14 +2,12 @@ import {
   Controller,
   Post,
   Body,
-  Get,
-  Query,
-  Logger,  
+  Logger,
   HttpException,
   HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
-import { TestPromptService, TestPromptResult } from '../services/test-prompt.service';
+import { TestPromptService } from '../services/test-prompt.service';
 
 interface ExecuteTestPromptDto {
   prompt: string;
@@ -79,7 +77,7 @@ export class TestPromptController {
   async executeTestPrompt(@Body() dto: ExecuteTestPromptDto) {
     try {
       const { prompt, variables = {} } = dto;
-      
+
       if (!prompt || typeof prompt !== 'string') {
         throw new HttpException(
           'Prompt is required and must be a string',
@@ -87,28 +85,27 @@ export class TestPromptController {
         );
       }
 
-      this.logger.log(`Executing test prompt with ${Object.keys(variables).length} variables`);
-      
+      this.logger.log(
+        `Executing test prompt with ${Object.keys(variables).length} variables`,
+      );
+
       const result = await this.testPromptService.executeTestPrompt(
         prompt,
         variables,
       );
 
       if (result.error) {
-        throw new HttpException(
-          result.error,
-          HttpStatus.INTERNAL_SERVER_ERROR,
-        );
+        throw new HttpException(result.error, HttpStatus.INTERNAL_SERVER_ERROR);
       }
 
       return result;
     } catch (error) {
       this.logger.error('Error in executeTestPrompt:', error);
-      
+
       if (error instanceof HttpException) {
         throw error;
       }
-      
+
       throw new HttpException(
         'Failed to execute test prompt',
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -150,7 +147,7 @@ export class TestPromptController {
   async detectVariables(@Body() dto: DetectVariablesDto) {
     try {
       const { prompt } = dto;
-      
+
       if (!prompt || typeof prompt !== 'string') {
         throw new HttpException(
           'Prompt is required and must be a string',
@@ -159,11 +156,11 @@ export class TestPromptController {
       }
 
       const variables = this.testPromptService.detectVariables(prompt);
-      
+
       return { variables };
     } catch (error) {
       this.logger.error('Error in detectVariables:', error);
-      
+
       throw new HttpException(
         'Failed to detect variables',
         HttpStatus.INTERNAL_SERVER_ERROR,

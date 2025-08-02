@@ -5,14 +5,13 @@ import {
   Param,
   Get,
   UseGuards,
-  Req,
   Patch,
   Delete,
   ForbiddenException,
+  Query,
 } from '@nestjs/common';
 import { OutreachService } from './outreach.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { JwtPayload } from '../auth/dto/jwt-payload.dto';
 import { CreateOutreachSequenceDto } from './dto/create-outreach-sequence.dto';
 import { UpdateOutreachSequenceDto } from './dto/update-outreach-sequence.dto';
 import { CreateOutreachStepTemplateDto } from './dto/create-outreach-step-template.dto';
@@ -28,17 +27,14 @@ export class OutreachController {
 
   @Get('templates')
   findAllTemplates() {
-    return this.outreachService.findAll(); // organizationId = null
+    return this.outreachService.findAll(); // signalId = null
   }
 
   // --- Template Cloning ---
 
   @Post('templates/:id/clone')
-  cloneSequence(@Param('id') id: number, @Req() req: { user: JwtPayload }) {
-    return this.outreachService.cloneSequence(
-      id,
-      req.user.organizationId ?? '',
-    );
+  cloneSequence(@Param('id') id: number, @Query('signalId') signalId: string) {
+    return this.outreachService.cloneSequence(id, signalId);
   }
 
   // --- AI Message Generation for Preview ---
@@ -52,64 +48,50 @@ export class OutreachController {
     );
   }
 
-  // --- Organization-Scoped Sequence Management ---
+  // --- Signal-Scoped Sequence Management ---
 
   @Post('sequences')
-  createSequence(
-    @Body() createOutreachSequenceDto: CreateOutreachSequenceDto,
-    @Req() req: { user: JwtPayload },
-  ) {
-    return this.outreachService.create(
-      createOutreachSequenceDto,
-      req.user.organizationId ?? undefined,
-    );
+  createSequence(@Body() createOutreachSequenceDto: CreateOutreachSequenceDto) {
+    return this.outreachService.create(createOutreachSequenceDto);
   }
 
   @Get('sequences')
-  findAllSequences(@Req() req: { user: JwtPayload }) {
-    return this.outreachService.findAll(req.user.organizationId ?? undefined);
+  findAllSequences(@Query('signalId') signalId: string) {
+    return this.outreachService.findAll(signalId);
   }
 
   @Get('sequences/:id')
-  findOneSequence(@Param('id') id: number, @Req() req: { user: JwtPayload }) {
-    return this.outreachService.findOne(
-      id,
-      req.user.organizationId ?? undefined,
-    );
+  findOneSequence(
+    @Param('id') id: number,
+    @Query('signalId') signalId: string,
+  ) {
+    return this.outreachService.findOne(id, signalId);
   }
 
   @Patch('sequences/:id')
   updateSequence(
     @Param('id') id: number,
     @Body() updateOutreachSequenceDto: UpdateOutreachSequenceDto,
-    @Req() req: { user: JwtPayload },
   ) {
-    return this.outreachService.update(
-      id,
-      updateOutreachSequenceDto,
-      req.user.organizationId ?? undefined,
-    );
+    return this.outreachService.update(id, updateOutreachSequenceDto);
   }
 
   @Delete('sequences/:id')
-  removeSequence(@Param('id') id: number, @Req() req: { user: JwtPayload }) {
-    return this.outreachService.remove(
-      id,
-      req.user.organizationId ?? undefined,
-    );
+  removeSequence(@Param('id') id: number, @Query('signalId') signalId: string) {
+    return this.outreachService.remove(id, signalId);
   }
 
-  // --- Organization-Scoped Step Management ---
+  // --- Signal-Scoped Step Management ---
 
   @Post('sequences/:sequenceId/steps')
   createStep(
     @Param('sequenceId') sequenceId: number,
     @Body() createOutreachStepTemplateDto: CreateOutreachStepTemplateDto,
-    @Req() req: { user: JwtPayload },
+    @Query('signalId') signalId: string,
   ) {
     return this.outreachService.createStep(
       { ...createOutreachStepTemplateDto, sequence_id: sequenceId },
-      req.user.organizationId ?? undefined,
+      signalId,
     );
   }
 
@@ -117,21 +99,18 @@ export class OutreachController {
   updateStep(
     @Param('id') id: number,
     @Body() updateOutreachStepTemplateDto: UpdateOutreachStepTemplateDto,
-    @Req() req: { user: JwtPayload },
+    @Query('signalId') signalId: string,
   ) {
     return this.outreachService.updateStep(
       id,
       updateOutreachStepTemplateDto,
-      req.user.organizationId ?? undefined,
+      signalId,
     );
   }
 
   @Delete('steps/:id')
-  removeStep(@Param('id') id: number, @Req() req: { user: JwtPayload }) {
-    return this.outreachService.removeStep(
-      id,
-      req.user.organizationId ?? undefined,
-    );
+  removeStep(@Param('id') id: number, @Query('signalId') signalId: string) {
+    return this.outreachService.removeStep(id, signalId);
   }
 
   // --- Existing Conversation Endpoints ---
@@ -139,15 +118,14 @@ export class OutreachController {
   @Post('sequences/:id/initiate')
   initiateConversations(
     @Param('id') id: number,
-    @Req() req: { user: JwtPayload },
+    @Query('signalId') signalId: string,
   ) {
-    const { organizationId } = req.user;
-    if (!organizationId) {
+    if (!signalId) {
       throw new ForbiddenException(
-        'Cannot initiate a sequence without an organization.',
+        'Cannot initiate a sequence without a signal.',
       );
     }
-    return this.outreachService.initiateConversations(id, organizationId);
+    return this.outreachService.initiateConversations(id, signalId);
   }
 
   @Post('reply')

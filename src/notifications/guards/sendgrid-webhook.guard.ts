@@ -19,13 +19,13 @@ export class SendGridWebhookGuard implements CanActivate {
       'SENDGRID_WEBHOOK_VERIFICATION_KEY',
       '',
     );
-    
+
     if (!this.webhookVerificationKey) {
       this.logger.warn(
         'SENDGRID_WEBHOOK_VERIFICATION_KEY is not set. Webhook verification is disabled.',
       );
     }
-    
+
     this.eventWebhook = new EventWebhook();
   }
 

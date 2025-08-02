@@ -33,10 +33,8 @@ export class AgentExecutionService {
 
   private gateway: any; // Will be set by the gateway
 
-  constructor(
-    private readonly agentRegistry: AgentRegistryService,
-  ) {}
-  
+  constructor(private readonly agentRegistry: AgentRegistryService) {}
+
   setGateway(gateway: any) {
     this.gateway = gateway;
   }
@@ -67,10 +65,10 @@ export class AgentExecutionService {
     user?: any,
   ): Promise<AgentExecutionResult> {
     const execId = executionId || uuidv4();
-    
+
     // Create cancellation token
     const abortController = new AbortController();
-    
+
     // Initialize execution record
     const execution: ExecutionRecord = {
       executionId: execId,
@@ -86,7 +84,7 @@ export class AgentExecutionService {
       },
       user,
     };
-    
+
     this.executions.set(execId, execution);
 
     // Create context with cancellation support
@@ -101,7 +99,7 @@ export class AgentExecutionService {
         if (abortController.signal.aborted) {
           throw new Error('Execution cancelled');
         }
-        
+
         execution.progress = { percentage, message, metadata };
         this.sendProgress(execId, { percentage, message, metadata });
       },
@@ -139,21 +137,23 @@ export class AgentExecutionService {
 
       // Execute with cancellation support
       const result = await this.executeWithCancellation(
-        () => this.agentRegistry.executeAgentMethod(
-          agentId,
-          methodName,
-          params,
-          wrappedContext,
-        ),
+        () =>
+          this.agentRegistry.executeAgentMethod(
+            agentId,
+            methodName,
+            params,
+            wrappedContext,
+          ),
         abortController.signal,
       );
 
       execution.status = 'completed';
       execution.result = result;
       execution.endTime = new Date();
-      
+
       // Calculate execution time
-      const executionTime = execution.endTime.getTime() - execution.startTime.getTime();
+      const executionTime =
+        execution.endTime.getTime() - execution.startTime.getTime();
 
       // Report completion
       await this.reportProgress(execId, {
@@ -184,10 +184,11 @@ export class AgentExecutionService {
 
       return executionResult;
     } catch (error) {
-      execution.status = error.message === 'Execution cancelled' ? 'cancelled' : 'failed';
+      execution.status =
+        error.message === 'Execution cancelled' ? 'cancelled' : 'failed';
       execution.error = error.message;
       execution.endTime = new Date();
-      
+
       // Calculate execution time
       const executionTime = Date.now() - execution.startTime.getTime();
 
@@ -330,9 +331,9 @@ export class AgentExecutionService {
       const onAbort = () => {
         reject(new Error('Execution cancelled'));
       };
-      
+
       signal.addEventListener('abort', onAbort);
-      
+
       try {
         const result = await executeFn();
         resolve(result);
@@ -346,31 +347,37 @@ export class AgentExecutionService {
 
   getActiveExecutions(): Array<Omit<ExecutionRecord, 'cancellationToken'>> {
     const activeExecutions = Array.from(this.executions.values())
-      .filter(exec => exec.status === 'running' || exec.status === 'pending')
+      .filter((exec) => exec.status === 'running' || exec.status === 'pending')
       .map(({ cancellationToken, ...rest }) => rest); // Remove internal fields
-      
+
     return activeExecutions;
   }
 
-  async getExecution(executionId: string): Promise<Omit<ExecutionRecord, 'cancellationToken'> | null> {
+  async getExecution(
+    executionId: string,
+  ): Promise<Omit<ExecutionRecord, 'cancellationToken'> | null> {
     const execution = this.executions.get(executionId);
-    
+
     if (!execution) {
       return null;
     }
-    
+
     const { cancellationToken, ...rest } = execution;
     return rest;
   }
 
   async cancelExecution(executionId: string): Promise<boolean> {
     const execution = this.executions.get(executionId);
-    
+
     if (!execution) {
       return false;
     }
 
-    if (execution.status === 'completed' || execution.status === 'failed' || execution.status === 'cancelled') {
+    if (
+      execution.status === 'completed' ||
+      execution.status === 'failed' ||
+      execution.status === 'cancelled'
+    ) {
       return false;
     }
 
@@ -378,12 +385,12 @@ export class AgentExecutionService {
     execution.cancellationToken?.abort();
     execution.status = 'cancelled';
     execution.endTime = new Date();
-    
+
     // Notify via WebSocket
     this.sendCancellation(executionId);
-    
+
     this.logger.log(`Cancelled execution ${executionId}`);
-    
+
     return true;
   }
 

@@ -5,6 +5,7 @@ import {
   IsObject,
   ValidateNested,
   IsBoolean,
+  IsUUID,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { SignalType, SignalFrequency } from '../entities/signal.entity';
@@ -79,4 +80,8 @@ export class CreateSignalDto {
   @ValidateNested()
   @Type(() => ScheduleDto)
   schedule?: ScheduleDto;
+
+  @IsUUID()
+  @IsOptional()
+  organizationId?: string;
 }

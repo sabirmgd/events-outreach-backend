@@ -128,7 +128,7 @@ export class PersonaService {
     if (!email) return null;
     // Assuming email is stored in contact_channels table
     const channel = await this.contactChannelRepository.findOne({
-      where: { 
+      where: {
         type: 'email',
         value: email,
       },

@@ -4,6 +4,7 @@ import {
   IsOptional,
   IsInt,
   IsObject,
+  IsUUID,
 } from 'class-validator';
 
 export class CreateOutreachSequenceDto {
@@ -34,4 +35,7 @@ export class CreateOutreachSequenceDto {
   @IsString()
   @IsOptional()
   status?: string;
+
+  @IsUUID()
+  signalId: string;
 }

@@ -10,6 +10,9 @@ import {
 } from 'typeorm';
 import { User } from '../../user/entities/user.entity';
 import { SignalExecution } from './signal-execution.entity';
+import { Organization } from '../../organization/entities/organization.entity';
+import { OutreachSequence } from '../../outreach/entities/outreach-sequence.entity';
+import { Event } from '../../event/entities/event.entity';
 
 export enum SignalType {
   CONFERENCE = 'conference',
@@ -70,6 +73,7 @@ export class Signal {
       start: string;
       end: string;
     };
+    extract_sponsors?: boolean;
 
     // Funding type
     funding_stage?: string;
@@ -118,8 +122,24 @@ export class Signal {
   @Column({ name: 'created_by' })
   createdById: string;
 
+  @ManyToOne(() => Organization, (organization) => organization.signals, {
+    nullable: false,
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'organization_id' })
+  organization: Organization;
+
+  @Column({ name: 'organization_id' })
+  organizationId: string;
+
   @OneToMany(() => SignalExecution, (execution) => execution.signal)
   executions: SignalExecution[];
+
+  @OneToMany(() => OutreachSequence, (sequence) => sequence.signal)
+  outreachSequences: OutreachSequence[];
+
+  @OneToMany(() => Event, (event) => event.signal)
+  events: Event[];
 
   @CreateDateColumn()
   createdAt: Date;

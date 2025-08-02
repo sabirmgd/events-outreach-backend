@@ -6,7 +6,7 @@ import { OutreachStepTemplate } from './entities/outreach-step-template.entity';
 import { Conversation } from './entities/conversation.entity';
 import { Message } from './entities/message.entity';
 import { PersonaModule } from '../persona/persona.module';
-import { EventModule } from '@event/event.module';
+import { EventModule } from '../event/event.module';
 import { AdminOutreachController } from './admin-outreach.controller';
 import { OutreachController } from './outreach.controller';
 import { OutreachService } from './outreach.service';
@@ -15,6 +15,7 @@ import { UserModule } from '../user/user.module';
 import { AuthModule } from '../auth/auth.module';
 import { ConversationController } from './conversation.controller';
 import { ConversationService } from './conversation.service';
+import { SignalModule } from '../signal/signal.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { ConversationService } from './conversation.service';
     forwardRef(() => EventModule),
     UserModule,
     AuthModule,
+    SignalModule,
   ],
   controllers: [
     OutreachController,

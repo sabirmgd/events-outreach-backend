@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { SignalController } from './signal.controller';
 import { SignalService } from './signal.service';
@@ -16,13 +16,18 @@ import { CompanyPersonRole } from '../persona/entities/company-person-role.entit
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Signal, SignalExecution, EventSponsor, CompanyPersonRole]),
+    TypeOrmModule.forFeature([
+      Signal,
+      SignalExecution,
+      EventSponsor,
+      CompanyPersonRole,
+    ]),
     AgentModule,
     PromptsModule,
-    EventModule,
-    CompanyModule,
-    PersonaModule,
-    GeographyModule,
+    forwardRef(() => EventModule),
+    forwardRef(() => CompanyModule),
+    forwardRef(() => PersonaModule),
+    forwardRef(() => GeographyModule),
   ],
   controllers: [SignalController],
   providers: [SignalService, SignalExecutionService],

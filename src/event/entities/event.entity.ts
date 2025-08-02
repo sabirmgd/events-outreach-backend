@@ -13,7 +13,7 @@ import { City } from '@geography/entities/city.entity';
 import { EventCandidate } from './event-candidate.entity';
 import { Job } from '@jobs/entities/job.entity';
 import { EventSponsor } from './event-sponsor.entity';
-import { Organization } from '../../organization/entities/organization.entity';
+import { Signal } from '../../signal/entities/signal.entity';
 
 @Entity('events')
 export class Event {
@@ -57,11 +57,11 @@ export class Event {
   @OneToMany(() => EventSponsor, (sponsor) => sponsor.event, { cascade: true })
   sponsors: EventSponsor[];
 
-  @ManyToOne(() => Organization, {
+  @ManyToOne(() => Signal, (signal) => signal.events, {
     nullable: true,
     onDelete: 'CASCADE',
   })
-  organization: Organization;
+  signal: Signal;
 
   @CreateDateColumn()
   created_at: Date;

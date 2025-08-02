@@ -5,6 +5,7 @@ import {
   IsInt,
   IsUrl,
   IsDateString,
+  IsUUID,
 } from 'class-validator';
 
 export class CreateEventDto {
@@ -55,4 +56,8 @@ export class CreateEventDto {
   @IsInt()
   @IsOptional()
   created_from_candidate_id?: number;
+
+  @IsUUID()
+  @IsOptional()
+  signalId?: string;
 }

@@ -12,14 +12,15 @@ import { EventWithDetails } from '../baml_client/baml_client/types';
 @Agent({
   id: 'event-discovery',
   name: 'Event Discovery Agent',
-  description: 'Discovers and extracts structured event information using chain-of-thought reasoning',
-  category: 'discovery'
+  description:
+    'Discovers and extracts structured event information using chain-of-thought reasoning',
+  category: 'discovery',
 })
 @Injectable()
 export class EventDiscoveryAgent {
   private readonly logger = new Logger(EventDiscoveryAgent.name);
   private agent: AgentExecutor;
-  
+
   constructor(
     private configService: ConfigService,
     private promptsService: PromptsService,
@@ -42,22 +43,26 @@ export class EventDiscoveryAgent {
 
     let systemPrompt: string;
     try {
-      systemPrompt = await this.promptsService.getPublishedPromptBody('event-discovery-agent.system');
+      systemPrompt = await this.promptsService.getPublishedPromptBody(
+        'event-discovery-agent.system',
+      );
     } catch (error) {
-      this.logger.warn('Failed to fetch system prompt from database, using fallback');
+      this.logger.warn(
+        'Failed to fetch system prompt from database, using fallback',
+      );
       systemPrompt = await this.getDefaultSystemPrompt();
     }
 
     const prompt = ChatPromptTemplate.fromMessages([
       ['system', systemPrompt],
       ['human', '{input}'],
-      ['placeholder', '{agent_scratchpad}']
+      ['placeholder', '{agent_scratchpad}'],
     ]);
 
     const agent = createToolCallingAgent({ llm, tools, prompt });
-    
-    this.agent = new AgentExecutor({ 
-      agent, 
+
+    this.agent = new AgentExecutor({
+      agent,
       tools,
       maxIterations: 5,
     });
@@ -101,37 +106,39 @@ Be thorough but return only verified information. It's better to have null field
         name: 'location',
         type: 'string',
         description: 'Country or region for the event search',
-        required: true
+        required: true,
       },
       {
         name: 'city',
         type: 'string',
         description: 'Specific city for the event search',
-        required: false
+        required: false,
       },
       {
         name: 'year',
         type: 'number',
         description: 'Year to search for events',
-        required: true
+        required: true,
       },
       {
         name: 'topic',
         type: 'string',
         description: 'Topic or industry focus',
         required: false,
-        default: 'technology'
-      }
-    ]
+        default: 'technology',
+      },
+    ],
   })
   async searchEvents(
-    location: string, 
-    city: string, 
-    year: number, 
+    location: string,
+    city: string,
+    year: number,
     topic: string = 'technology',
-    context?: any
+    context?: any,
   ): Promise<any[]> {
-    this.logger.log(`Searching for ${topic} events in ${city || location} for ${year}`);
+    this.logger.log(
+      `Searching for ${topic} events in ${city || location} for ${year}`,
+    );
 
     if (!this.agent) {
       await this.initializeAgent();
@@ -152,16 +159,16 @@ Extract comprehensive information about each event found.`;
     if (context?.updateProgress) {
       context.updateProgress(30, 'Searching with LangChain tools');
     }
-    
+
     try {
       // Check for cancellation
       if (context?.signal?.aborted) {
         throw new Error('Execution cancelled');
       }
-      
+
       // Step 1: Use LangChain agent to search for events
       const result = await this.agent.invoke({ input: searchInstruction });
-      
+
       if (context?.updateProgress) {
         context.updateProgress(60, 'Extracting structured data with BAML');
       }
@@ -171,12 +178,14 @@ Extract comprehensive information about each event found.`;
       if (typeof result.output === 'string') {
         searchText = result.output;
       } else if (Array.isArray(result.output)) {
-        searchText = result.output.map((item: any) => {
-          if (typeof item === 'string') return item;
-          if (item?.text) return item.text;
-          if (item?.content) return item.content;
-          return JSON.stringify(item);
-        }).join('\n');
+        searchText = result.output
+          .map((item: any) => {
+            if (typeof item === 'string') return item;
+            if (item?.text) return item.text;
+            if (item?.content) return item.content;
+            return JSON.stringify(item);
+          })
+          .join('\n');
       } else if (result.output?.text) {
         searchText = result.output.text;
       } else if (result.output?.content) {
@@ -198,15 +207,17 @@ Extract comprehensive information about each event found.`;
         this.logger.warn('Falling back to direct parsing of search results');
         return this.parseAgentOutput(result?.output || '[]');
       }
-      
+
       if (context?.updateProgress) {
         context.updateProgress(90, 'Processing results');
       }
 
-      this.logger.log(`Successfully extracted ${eventsWithDetails.length} events with details`);
-      
+      this.logger.log(
+        `Successfully extracted ${eventsWithDetails.length} events with details`,
+      );
+
       // Convert BAML EventWithDetails to simple event format for compatibility
-      const events = eventsWithDetails.map(eventWithDetails => ({
+      const events = eventsWithDetails.map((eventWithDetails) => ({
         name: eventWithDetails.event.name,
         date: eventWithDetails.event.dates || `${year}`,
         location: `${eventWithDetails.event.city}, ${eventWithDetails.event.country || location}`,
@@ -217,8 +228,8 @@ Extract comprehensive information about each event found.`;
         description: eventWithDetails.event.description,
         organizer: eventWithDetails.event.organizer,
         type: eventWithDetails.event.type || 'conference',
-        sponsors: eventWithDetails.sponsors?.map(s => s.company.name) || [],
-        speakers: eventWithDetails.speakers?.map(s => s.name) || []
+        sponsors: eventWithDetails.sponsors?.map((s) => s.company.name) || [],
+        speakers: eventWithDetails.speakers?.map((s) => s.name) || [],
       }));
 
       return events;
@@ -232,7 +243,7 @@ Extract comprehensive information about each event found.`;
   private parseAgentOutput(output: any): any[] {
     try {
       let outputText = output;
-      
+
       // Handle different output formats
       if (typeof output === 'object' && output !== null) {
         if (output.text) {
@@ -243,20 +254,22 @@ Extract comprehensive information about each event found.`;
           outputText = JSON.stringify(output);
         }
       }
-      
+
       // Ensure outputText is a string
       if (typeof outputText !== 'string') {
         outputText = JSON.stringify(outputText);
       }
-      
+
       // Try to extract JSON structure
-      const jsonMatch = outputText.match(/\{[\s\S]*"reasoning"[\s\S]*"events"[\s\S]*\}/);
+      const jsonMatch = outputText.match(
+        /\{[\s\S]*"reasoning"[\s\S]*"events"[\s\S]*\}/,
+      );
       if (jsonMatch) {
         const parsed = JSON.parse(jsonMatch[0]);
         this.logger.log('Chain of thought reasoning:', parsed.reasoning);
         return parsed.events || [];
       }
-      
+
       // Try direct JSON parse if no match found
       try {
         const parsed = JSON.parse(outputText);
@@ -267,7 +280,7 @@ Extract comprehensive information about each event found.`;
       } catch (e) {
         // Not valid JSON, continue
       }
-      
+
       // Fallback: look for array pattern
       const arrayMatch = outputText.match(/\[[\s\S]*\]/);
       if (arrayMatch) {
@@ -277,7 +290,7 @@ Extract comprehensive information about each event found.`;
           // Not valid array
         }
       }
-      
+
       throw new Error('No valid event data found in output');
     } catch (error) {
       this.logger.error('Failed to parse agent output:', error);

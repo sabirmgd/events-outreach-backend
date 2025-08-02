@@ -16,4 +16,4 @@ import { AimfoxWebhookHelper } from './aimfox.helper';
     AimfoxWebhookHelper,
   ],
 })
-export class NotificationsModule {} 
+export class NotificationsModule {}

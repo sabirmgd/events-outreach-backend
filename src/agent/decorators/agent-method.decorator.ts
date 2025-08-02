@@ -71,9 +71,9 @@ function extractParameters(
   paramTypes: unknown[],
 ): AgentParameter[] {
   // Try to get parameter names from the function
-  const method = (target as Record<string | symbol, any>)[
-    propertyKey
-  ] as (...args: any[]) => any;
+  const method = (target as Record<string | symbol, any>)[propertyKey] as (
+    ...args: any[]
+  ) => any;
   const paramNames = getParamNames(method);
 
   return paramTypes.map((type, index) => ({

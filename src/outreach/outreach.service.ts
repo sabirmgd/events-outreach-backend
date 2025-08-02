@@ -10,7 +10,7 @@ import { Conversation } from './entities/conversation.entity';
 import { Message } from './entities/message.entity';
 import { CreateOutreachStepTemplateDto } from './dto/create-outreach-step-template.dto';
 import { UpdateOutreachStepTemplateDto } from './dto/update-outreach-step-template.dto';
-import { EventService } from '@event/event.service';
+import { EventService } from '../event/event.service';
 import { HandleReplyDto } from './dto/handle-reply.dto';
 import { ConversationStage } from './enums/conversation-stage.enum';
 import { ConversationAutomationStatus } from './enums/conversation-automation-status.enum';
@@ -18,8 +18,8 @@ import { ChatOpenAI } from '@langchain/openai';
 import { z } from 'zod';
 import { ConfigService } from '@nestjs/config';
 import { GenerateMessagePreviewDto } from './dto/generate-message-preview.dto';
-
-type OrgId = string | undefined;
+import { SignalService } from '../signal/signal.service';
+import { StructuredOutputParser } from 'langchain/output_parsers';
 
 @Injectable()
 export class OutreachService {
@@ -36,6 +36,7 @@ export class OutreachService {
     private readonly messageRepository: Repository<Message>,
     private readonly personaService: PersonaService,
     private readonly eventService: EventService,
+    private readonly signalService: SignalService,
     private readonly configService: ConfigService,
   ) {
     this.llm = new ChatOpenAI({
@@ -48,40 +49,40 @@ export class OutreachService {
 
   async create(
     createOutreachSequenceDto: CreateOutreachSequenceDto,
-    organizationId?: OrgId,
   ): Promise<OutreachSequence> {
-    const { event_id, ...rest } = createOutreachSequenceDto;
+    const { event_id, signalId, ...rest } = createOutreachSequenceDto;
     let event;
     if (event_id) {
       event = await this.eventService.findOne(event_id);
     }
+    const signal = await this.signalService.findOne(signalId);
 
     const sequence = this.outreachSequenceRepository.create({
       ...rest,
       event,
-      ...(organizationId ? { organization: { id: organizationId } } : {}),
+      signal,
     });
     return this.outreachSequenceRepository.save(sequence);
   }
 
-  findAll(organizationId?: OrgId): Promise<OutreachSequence[]> {
-    const where = organizationId
-      ? { organization: { id: organizationId } }
-      : { organization: IsNull() };
+  findAll(signalId?: string): Promise<OutreachSequence[]> {
+    const where = signalId
+      ? { signal: { id: signalId } }
+      : { signal: IsNull() };
     return this.outreachSequenceRepository.find({
       where,
-      relations: ['event'],
+      relations: ['event', 'signal'],
     });
   }
 
-  async findOne(id: number, organizationId?: OrgId): Promise<OutreachSequence> {
-    const where = organizationId
-      ? { id, organization: { id: organizationId } }
-      : { id, organization: IsNull() };
+  async findOne(id: number, signalId?: string): Promise<OutreachSequence> {
+    const where = signalId
+      ? { id, signal: { id: signalId } }
+      : { id, signal: IsNull() };
 
     const sequence = await this.outreachSequenceRepository.findOne({
       where,
-      relations: ['event', 'steps'],
+      relations: ['event', 'steps', 'signal'],
     });
     if (!sequence) {
       throw new NotFoundException(`OutreachSequence with ID ${id} not found`);
@@ -92,10 +93,9 @@ export class OutreachService {
   async update(
     id: number,
     updateOutreachSequenceDto: UpdateOutreachSequenceDto,
-    organizationId?: OrgId,
   ): Promise<OutreachSequence> {
-    const { event_id, ...rest } = updateOutreachSequenceDto;
-    const sequence = await this.findOne(id, organizationId);
+    const { event_id, signalId, ...rest } = updateOutreachSequenceDto;
+    const sequence = await this.findOne(id, signalId);
 
     let event;
     if (event_id) {
@@ -111,11 +111,11 @@ export class OutreachService {
 
   async remove(
     id: number,
-    organizationId?: OrgId,
+    signalId?: string,
   ): Promise<{ deleted: boolean; id?: number }> {
-    const where = organizationId
-      ? { id, organization: { id: organizationId } }
-      : { id, organization: IsNull() };
+    const where = signalId
+      ? { id, signal: { id: signalId } }
+      : { id, signal: IsNull() };
     const result = await this.outreachSequenceRepository.delete(where);
     if (result.affected === 0) {
       throw new NotFoundException(`OutreachSequence with ID ${id} not found`);
@@ -127,30 +127,28 @@ export class OutreachService {
 
   async cloneSequence(
     templateId: number,
-    organizationId: string,
+    signalId: string,
   ): Promise<OutreachSequence> {
-    if (!organizationId) {
-      throw new Error('Cloning requires a valid organizationId.');
+    if (!signalId) {
+      throw new Error('Cloning requires a valid signalId.');
     }
 
     // 1. Find the global template
     const template = await this.findOne(templateId, undefined); // 'undefined' ensures we find a global one
-    if (template.organization) {
+    if (template.signal) {
       throw new Error(
-        'Cannot clone a sequence that already belongs to an organization.',
+        'Cannot clone a sequence that already belongs to a signal.',
       );
     }
 
-    // 2. Create a shallow copy of the sequence for the new organization
+    // 2. Create a shallow copy of the sequence for the new signal
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { id, created_at, updated_at, ...restOfTemplate } = template;
-    const newSequence = await this.create(
-      {
-        ...restOfTemplate,
-        name: `${template.name} (Copy)`, // Append to the name to signify it's a copy
-      },
-      organizationId,
-    );
+    const newSequence = await this.create({
+      ...restOfTemplate,
+      name: `${template.name} (Copy)`, // Append to the name to signify it's a copy
+      signalId,
+    });
 
     // 3. Find and deep copy all steps associated with the original template
     const templateSteps = await this.findAllSteps(template.id);
@@ -163,21 +161,21 @@ export class OutreachService {
           ...restOfStep,
           sequence_id: newSequence.id,
         },
-        organizationId,
+        signalId,
       );
     }
 
-    return this.findOne(newSequence.id, organizationId);
+    return this.findOne(newSequence.id, signalId);
   }
 
   // --- Step Management ---
 
   async createStep(
     createOutreachStepTemplateDto: CreateOutreachStepTemplateDto,
-    organizationId?: OrgId,
+    signalId?: string,
   ): Promise<OutreachStepTemplate> {
     const { sequence_id, ...rest } = createOutreachStepTemplateDto;
-    const sequence = await this.findOne(sequence_id, organizationId);
+    const sequence = await this.findOne(sequence_id, signalId);
     const step = this.outreachStepTemplateRepository.create({
       ...rest,
       sequence,
@@ -193,12 +191,12 @@ export class OutreachService {
 
   async findOneStep(
     id: number,
-    organizationId?: OrgId,
+    signalId?: string,
   ): Promise<OutreachStepTemplate> {
     const step = await this.outreachStepTemplateRepository.findOne({
       where: {
         id,
-        sequence: { organization: { id: organizationId || undefined } },
+        sequence: { signal: { id: signalId || undefined } },
       },
     });
     if (!step) {
@@ -212,9 +210,9 @@ export class OutreachService {
   async updateStep(
     id: number,
     updateOutreachStepTemplateDto: UpdateOutreachStepTemplateDto,
-    organizationId: OrgId,
+    signalId?: string,
   ): Promise<OutreachStepTemplate> {
-    const step = await this.findOneStep(id, organizationId);
+    const step = await this.findOneStep(id, signalId);
     const updated = this.outreachStepTemplateRepository.merge(
       step,
       updateOutreachStepTemplateDto,
@@ -224,9 +222,9 @@ export class OutreachService {
 
   async removeStep(
     id: number,
-    organizationId: OrgId,
+    signalId?: string,
   ): Promise<{ deleted: boolean; id?: number }> {
-    const step = await this.findOneStep(id, organizationId);
+    const step = await this.findOneStep(id, signalId);
     const result = await this.outreachStepTemplateRepository.delete(step.id);
     if (result.affected === 0) {
       throw new NotFoundException(
@@ -240,9 +238,9 @@ export class OutreachService {
 
   async initiateConversations(
     sequenceId: number,
-    organizationId: string,
+    signalId: string,
   ): Promise<{ count: number }> {
-    const sequence = await this.findOne(sequenceId, organizationId);
+    const sequence = await this.findOne(sequenceId, signalId);
 
     // TODO: Use discovery_prompt to find personas instead of getting all
     const personas = await this.personaService.findAll({});
@@ -336,7 +334,9 @@ Here is the history of the conversation so far:
 ${dto.previous_steps
   .map(
     (s) =>
-      `- Day ${s.day} (${s.channel}): ${s.subject ? `Subject: ${s.subject} - ` : ''}Body: ${s.body}`,
+      `- Day ${s.day} (${s.channel}): ${
+        s.subject ? `Subject: ${s.subject} - ` : ''
+      }Body: ${s.body}`,
   )
   .join('\n')}
 `
@@ -355,15 +355,18 @@ ${dto.previous_steps
       }
     }
 
-    const yourIdentityContext = Object.keys(yourVariables).length > 0
-    ? `
+    const yourIdentityContext =
+      Object.keys(yourVariables).length > 0
+        ? `
 ---
 SENDER CONTEXT
 This is the information about the person sending the message. Use this to inform the tone and signature.
-${Object.entries(yourVariables).map(([key, value]) => `- ${key.replace(/{{|}}/g, '')}: ${value}`).join('\n')}
+${Object.entries(yourVariables)
+  .map(([key, value]) => `- ${key.replace(/{{|}}/g, '')}: ${value}`)
+  .join('\n')}
 ---
 `
-    : '';
+        : '';
 
     const placeholderInstruction = `
 ---
@@ -374,10 +377,6 @@ You MUST use the following placeholders for recipient-specific details. Do not r
 - Example of INCORRECT usage: "Hi John, I saw that Acme Corp is..."
 ---
 `;
-
-    const lengthInstruction = dto.message_length
-      ? `\n- The message should be ${dto.message_length} in length.`
-      : '';
 
     const prompt = `You are an expert copywriter tasked with creating a reusable outreach TEMPLATE.
 
@@ -395,7 +394,11 @@ Additional Guidelines:
 - Be concise and professional.
 - Focus on value, not features.
 - Include a clear call to action.
-${dto.channel === 'linkedin_conn' ? '- Keep the message under 300 characters for LinkedIn connection requests.' : ''}`;
+${
+  dto.channel === 'linkedin_conn'
+    ? '- Keep the message under 300 characters for LinkedIn connection requests.'
+    : ''
+}`;
 
     try {
       // Use structured output with LangChain
@@ -404,7 +407,7 @@ ${dto.channel === 'linkedin_conn' ? '- Keep the message under 300 characters for
       ) as any;
       const result = await structuredLlm.invoke(prompt);
 
-      return result as { subject: string; body: string };
+      return result;
     } catch (error) {
       throw new Error(
         `Failed to generate message preview: ${(error as Error).message}`,
