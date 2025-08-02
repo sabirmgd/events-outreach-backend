@@ -48,10 +48,13 @@ export class AuthService {
       throw new UnauthorizedException('Access denied. Admin role required.');
     }
 
+    const permissions =
+      user.roles?.flatMap((role) => role.permissions.map((p) => p.action + ':' + p.subject)) || [];
     const payload = {
       sub: user.id,
       email: user.email,
       roles: user.roles?.map((role) => role.name) || [],
+      permissions: [...new Set(permissions)],
       organizationId: user.organization?.id || null,
       teamId: user.team?.id || null,
     };
@@ -60,6 +63,7 @@ export class AuthService {
 
     await this.updateRefreshToken(user.id, tokens.refresh_token);
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password: userPassword, ...userWithoutPassword } = user;
 
     return {
@@ -73,7 +77,7 @@ export class AuthService {
 
     const user = await this.userRepository.findOne({
       where: { invitationToken: token },
-      relations: ['roles', 'organization', 'team'],
+      relations: ['roles', 'roles.permissions', 'organization', 'team'],
     });
 
     if (!user) {
@@ -91,10 +95,13 @@ export class AuthService {
 
     await this.userRepository.save(user);
 
+    const permissions =
+      user.roles?.flatMap((role) => role.permissions.map((p) => p.action + ':' + p.subject)) || [];
     const payload = {
       sub: user.id,
       email: user.email,
       roles: user.roles?.map((role) => role.name) || [],
+      permissions: [...new Set(permissions)],
       organizationId: user.organization?.id || null,
       teamId: user.team?.id || null,
     };
@@ -103,6 +110,7 @@ export class AuthService {
 
     await this.updateRefreshToken(user.id, tokens.refresh_token);
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password: userPassword, ...userWithoutPassword } = user;
 
     return {
@@ -111,9 +119,9 @@ export class AuthService {
     };
   }
 
-  async logout(user: any) {
-    if (user && user.sub) {
-      await this.userRepository.update(user.sub, {
+  async logout(user: User) {
+    if (user && user.id) {
+      await this.userRepository.update(user.id, {
         refreshToken: undefined,
       });
     }
@@ -130,7 +138,7 @@ export class AuthService {
       const user = await this.userRepository.findOne({
         where: { id: payload.sub },
         select: ['id', 'email', 'refreshToken'],
-        relations: ['roles', 'organization', 'team'],
+        relations: ['roles', 'roles.permissions', 'organization', 'team'],
       });
 
       if (!user || !user.refreshToken) {
@@ -146,10 +154,13 @@ export class AuthService {
         throw new UnauthorizedException('Invalid refresh token');
       }
 
+      const permissions =
+        user.roles?.flatMap((role) => role.permissions.map((p) => p.action + ':' + p.subject)) || [];
       const newPayload = {
         sub: user.id,
         email: user.email,
         roles: user.roles?.map((role) => role.name) || [],
+        permissions: [...new Set(permissions)],
         organizationId: user.organization?.id || null,
         teamId: user.team?.id || null,
       };
@@ -163,7 +174,7 @@ export class AuthService {
     }
   }
 
-  private async generateTokens(payload: any) {
+  private async generateTokens(payload: object) {
     const [access_token, refresh_token] = await Promise.all([
       this.jwtService.signAsync(payload, {
         expiresIn: '15m',
