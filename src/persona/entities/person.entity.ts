@@ -40,6 +40,9 @@ export class Person {
   @Column({ nullable: true })
   timezone: string;
 
+  @Column({ nullable: true })
+  email: string;
+
   @Column('float', { nullable: true })
   source_confidence: number;
 

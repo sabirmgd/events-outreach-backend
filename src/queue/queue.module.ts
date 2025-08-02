@@ -1,43 +1,28 @@
-import { BullModule } from '@nestjs/bullmq';
-import { Global, Module } from '@nestjs/common';
+import { Module, Global, forwardRef } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import {
-  EVENT_QUEUE,
-  SCRAPE_QUEUE,
-  ENRICHMENT_QUEUE,
-  PERSONA_QUEUE,
-  DISCOVERY_QUEUE,
-} from './constants';
+import { BullModule } from '@nestjs/bullmq';
+import { QueueManagerService } from './queue-manager.service';
+import { WorkerManagerService } from './worker-manager.service';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { ScheduledAction } from '../outreach/entities/scheduled-action.entity';
 
-@Global()
+@Global() // Make it global so it can be used across modules
 @Module({
   imports: [
+    ConfigModule,
     BullModule.forRootAsync({
       imports: [ConfigModule],
-      inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
         connection: {
-          host: configService.get<string>('REDIS_HOST'),
-          port: configService.get<number>('REDIS_PORT'),
+          host: configService.get<string>('REDIS_HOST', 'localhost'),
+          port: configService.get<number>('REDIS_PORT', 6379),
         },
       }),
+      inject: [ConfigService],
     }),
-    BullModule.registerQueue({
-      name: EVENT_QUEUE,
-    }),
-    BullModule.registerQueue({
-      name: SCRAPE_QUEUE,
-    }),
-    BullModule.registerQueue({
-      name: ENRICHMENT_QUEUE,
-    }),
-    BullModule.registerQueue({
-      name: PERSONA_QUEUE,
-    }),
-    BullModule.registerQueue({
-      name: DISCOVERY_QUEUE,
-    }),
+    TypeOrmModule.forFeature([ScheduledAction]),
   ],
-  exports: [BullModule],
+  providers: [QueueManagerService, WorkerManagerService],
+  exports: [QueueManagerService, WorkerManagerService, BullModule],
 })
 export class QueueModule {}

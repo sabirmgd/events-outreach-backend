@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { BullModule } from '@nestjs/bullmq';
 import { Event } from './entities/event.entity';
 import { EventCandidate } from './entities/event-candidate.entity';
 import { EventSource } from './entities/event-source.entity';
@@ -10,6 +11,7 @@ import { GeographyModule } from '@geography/geography.module';
 import { CompanyModule } from '@company/company.module';
 import { JobsModule } from '@jobs/jobs.module';
 import { AuthModule } from '../auth/auth.module';
+import { DISCOVERY_QUEUE, SCRAPE_QUEUE } from '../queue/constants';
 
 @Module({
   imports: [
@@ -19,6 +21,7 @@ import { AuthModule } from '../auth/auth.module';
       EventSource,
       EventSponsor,
     ]),
+    BullModule.registerQueue({ name: DISCOVERY_QUEUE }, { name: SCRAPE_QUEUE }),
     GeographyModule,
     CompanyModule,
     JobsModule,

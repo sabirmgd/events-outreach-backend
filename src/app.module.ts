@@ -25,9 +25,11 @@ import { AgentsModule } from './agent/agents.module';
 import { OrganizationModule } from './organization/organization.module';
 import { AdminModule } from './admin/admin.module';
 import { SignalModule } from './signal/signal.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: [`.env.${process.env.NODE_ENV ?? 'dev'}`, '.env'],

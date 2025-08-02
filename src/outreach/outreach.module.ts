@@ -17,6 +17,11 @@ import { ConversationController } from './conversation.controller';
 import { ConversationService } from './conversation.service';
 import { SignalModule } from '../signal/signal.module';
 import { ScheduledAction } from './entities/scheduled-action.entity';
+import { SchedulingService } from './scheduling.service';
+import { ActionProcessor } from './processors/action.processor';
+import { ClientsModule } from '../clients/clients.module';
+import { EmailSender } from '../organization/entities/email-sender.entity';
+import { OrganizationModule } from '../organization/organization.module';
 
 @Module({
   imports: [
@@ -26,6 +31,7 @@ import { ScheduledAction } from './entities/scheduled-action.entity';
       Conversation,
       Message,
       ScheduledAction,
+      EmailSender, // Add EmailSender since ActionProcessor needs it
     ]),
     ConfigModule,
     PersonaModule,
@@ -34,13 +40,25 @@ import { ScheduledAction } from './entities/scheduled-action.entity';
     UserModule,
     AuthModule,
     SignalModule,
+    ClientsModule,
+    OrganizationModule,
   ],
   controllers: [
     OutreachController,
     AdminOutreachController,
     ConversationController,
   ],
-  providers: [OutreachService, ConversationService],
-  exports: [OutreachService, ConversationService],
+  providers: [
+    OutreachService,
+    ConversationService,
+    SchedulingService,
+    ActionProcessor,
+  ],
+  exports: [
+    OutreachService,
+    ConversationService,
+    SchedulingService,
+    ActionProcessor, // Export ActionProcessor so other modules can use it
+  ],
 })
 export class OutreachModule {}

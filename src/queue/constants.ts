@@ -4,3 +4,4 @@ export const ENRICHMENT_QUEUE = 'enrichment';
 export const PERSONA_QUEUE = 'persona';
 export const DISCOVERY_QUEUE = 'discovery';
 export const CONVERSATION_QUEUE = 'conversation';
+export const OUTREACH_ACTION_QUEUE = 'outreach-action';

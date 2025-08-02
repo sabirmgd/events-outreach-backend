@@ -19,7 +19,10 @@ export class ScheduledAction {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @ManyToOne(() => Conversation, (conversation) => conversation.scheduledActions)
+  @ManyToOne(
+    () => Conversation,
+    (conversation) => conversation.scheduledActions,
+  )
   conversation: Conversation;
 
   @ManyToOne(() => OutreachStepTemplate)
@@ -47,7 +50,7 @@ export class ScheduledAction {
   })
   status: ScheduledActionStatus;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   bull_job_id: string;
 
   @ManyToOne(() => EmailSender, { nullable: true })
