@@ -56,8 +56,12 @@ export class PersonaService {
       .leftJoinAndSelect('person.organization', 'organization')
       .leftJoinAndSelect('person.companyRoles', 'companyRoles')
       .leftJoinAndSelect('companyRoles.company', 'company')
+      .leftJoinAndSelect('company.eventSponsors', 'eventSponsors')
+      .leftJoinAndSelect('eventSponsors.event', 'sponsorEvent')
+      .leftJoinAndSelect('sponsorEvent.signal', 'eventSignal')
       .leftJoinAndSelect('person.conversations', 'conversation')
       .leftJoinAndSelect('conversation.sequence', 'sequence')
+      .leftJoinAndSelect('sequence.signal', 'signal')
       .leftJoinAndSelect('conversation.current_step', 'current_step')
       .leftJoinAndSelect('conversation.messages', 'messages')
       .where('organization.id = :organizationId', { organizationId });

@@ -5,9 +5,11 @@ import {
   Entity,
   Index,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { EventSponsor } from '../../event/entities/event-sponsor.entity';
 
 @Entity()
 export class Company {
@@ -47,6 +49,9 @@ export class Company {
   @Index({ fulltext: true })
   @Column({ type: 'tsvector', select: false, nullable: true })
   document_with_weights: any;
+
+  @OneToMany(() => EventSponsor, (sponsor) => sponsor.company)
+  eventSponsors: EventSponsor[];
 
   @CreateDateColumn()
   created_at: Date;
