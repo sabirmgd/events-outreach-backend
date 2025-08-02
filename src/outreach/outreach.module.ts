@@ -16,6 +16,7 @@ import { AuthModule } from '../auth/auth.module';
 import { ConversationController } from './conversation.controller';
 import { ConversationService } from './conversation.service';
 import { SignalModule } from '../signal/signal.module';
+import { ScheduledAction } from './entities/scheduled-action.entity';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { SignalModule } from '../signal/signal.module';
       OutreachStepTemplate,
       Conversation,
       Message,
+      ScheduledAction,
     ]),
     ConfigModule,
     PersonaModule,

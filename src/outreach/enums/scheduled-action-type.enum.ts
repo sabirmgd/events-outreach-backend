@@ -1,0 +1,4 @@
+export enum ScheduledActionType {
+  SEND_MESSAGE = 'SEND_MESSAGE',
+  SEND_CONNECTION_REQUEST = 'SEND_CONNECTION_REQUEST',
+}

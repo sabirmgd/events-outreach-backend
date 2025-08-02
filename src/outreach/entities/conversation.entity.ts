@@ -14,6 +14,7 @@ import { ConversationStage } from '../enums/conversation-stage.enum';
 import { ConversationAutomationStatus } from '../enums/conversation-automation-status.enum';
 import { ProspectTemperature } from '../enums/prospect-temperature.enum';
 import { OutreachStepTemplate } from './outreach-step-template.entity';
+import { ScheduledAction } from './scheduled-action.entity';
 
 @Entity('conversations')
 export class Conversation {
@@ -50,11 +51,17 @@ export class Conversation {
   @ManyToOne(() => OutreachStepTemplate, { nullable: true })
   current_step: OutreachStepTemplate;
 
+  @ManyToOne(() => OutreachStepTemplate, { nullable: true })
+  last_step_sent: OutreachStepTemplate;
+
   @Column({ type: 'timestamp with time zone', nullable: true })
   next_action_at: Date | null;
 
   @OneToMany(() => Message, (message) => message.conversation)
   messages: Message[];
+
+  @OneToMany(() => ScheduledAction, (action) => action.conversation)
+  scheduledActions: ScheduledAction[];
 
   @CreateDateColumn()
   created_at: Date;

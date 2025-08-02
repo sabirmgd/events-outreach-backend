@@ -3,6 +3,8 @@ import { User } from '../../user/entities/user.entity';
 import { Team } from './team.entity';
 import { BaseEntity } from '../../common/entities/base.entity';
 import { Signal } from '../../signal/entities/signal.entity';
+import { EmailSender } from './email-sender.entity';
+import { LinkedInAccount } from './linkedin-account.entity';
 
 @Entity('organizations')
 export class Organization extends BaseEntity {
@@ -26,4 +28,16 @@ export class Organization extends BaseEntity {
     onDelete: 'CASCADE',
   })
   signals: Signal[];
+
+  @OneToMany(() => EmailSender, (sender) => sender.organization, {
+    cascade: true,
+    onDelete: 'CASCADE',
+  })
+  emailSenders: EmailSender[];
+
+  @OneToMany(() => LinkedInAccount, (account) => account.organization, {
+    cascade: true,
+    onDelete: 'CASCADE',
+  })
+  linkedInAccounts: LinkedInAccount[];
 }

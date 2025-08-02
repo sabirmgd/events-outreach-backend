@@ -37,6 +37,9 @@ export class Person {
   @Column({ nullable: true })
   location_text: string;
 
+  @Column({ nullable: true })
+  timezone: string;
+
   @Column('float', { nullable: true })
   source_confidence: number;
 
